@@ -1,0 +1,64 @@
+#+TITLE: Ant Command Line Wrapper
+
+* Summary
+
+This is an [[http://ant.apache.org][Apache Ant]] command line wrapper similar to the [[http://www.gradle.org/docs/current/userguide/gradle_wrapper.html][Gradle command line wrapper]].
+
+The benefit is that you can just generate wrappers in your project.
+- Generate a wrapper for a project from a machine with an existing Ant installation.
+- Share the project without requiring an existing Ant installation from the 'builder'.
+
+* Notes
+- This project was only tested with Apache Ant 1.7.0 and Apache Ant 1.8.0.
+- _Windows Support is TRUELY incomplete_, but present. It will be added once I get a Windows machine around to play with.
+
+* Building the program
+You'll need a [[http://maven.apache.org][maven]] installation. 
+
+Using [[http://www.gradle.org][gradle]] as build system would probably have been more lightweight.
+However, having Maven already installed is not so uncommon these days...
+
+From the project directory, run the following command:
+
+ : mvn install
+
+* Installation
+
+The build process will generate the resulting jar in the project *target* folder.
+
+You have 2 installation options:
+- Drop the jar at the root of your project
+- Drop the jar in your *ANT\_HOME/lib* folder
+
+* Usage
+** Sample build script
+ : <?xml version="1.0"?>
+ : <project name="AntWrapperProject" default="generatewrapper">
+ : <!-- if you dropped the wrapper jar in ANT_HOME/lib -->
+ : <taskdef name="genAntWrapper" classname="com.rimerosolutions.buildtools.ant.wrapper.AntWrapperTask"/>
+ : 	
+ : 	<!-- if you have the wrapper jar at the root folder of your project 
+ : 	<taskdef name="genAntWrapper" classname="com.rimerosolutions.buildtools.ant.wrapper.AntWrapperTask">
+ : 	<classpath>
+ : 	    <pathelement location="ant-wrapper-0.0.1-SNAPSHOT.jar"/>
+ : 	  </classpath>
+ :   </taskdef>
+ :   --> 
+ : 
+ : 	<target name="generatewrapper">
+ :      <genAntWrapper/>
+ :     </target>
+ : </project>
+
+** Wrapper generation
+
+With the above sample script, accordingly to the installation that you selected, run the following:
+ : ant generatewrapper
+
+This will create 3 artefacts at the root of your project folder
+- antw : A unix command wrapper
+- antw.bat : A windows command wrapper (Untested, incomplete and likely not working yet)
+- wrapper : A folder containing the launcher supporting files
+
+** Testing
+Now from another Unix/Linux machine, copy your Ant project and run your ant tasks via the *antw* wrapper!
