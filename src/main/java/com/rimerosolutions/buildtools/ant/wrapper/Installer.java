@@ -87,7 +87,7 @@ public class Installer
             if ( dirs.isEmpty() )
             {
                 throw new RuntimeException(
-                                            String.format( "Maven distribution '%s' does not contain any directories. Expected to find exactly 1 directory.",
+                                            String.format( "Ant distribution '%s' does not contain any directories. Expected to find exactly 1 directory.",
                                                            distributionUrl ) );
             }
             setExecutablePermissions( dirs.get( 0 ) );
@@ -95,7 +95,7 @@ public class Installer
         if ( dirs.size() != 1 )
         {
             throw new RuntimeException(
-                                        String.format( "Maven distribution '%s' contains too many directories. Expected to find exactly 1 directory.",
+                                        String.format( "Ant distribution '%s' contains too many directories. Expected to find exactly 1 directory.",
                                                        distributionUrl ) );
         }
         return dirs.get( 0 );
@@ -117,21 +117,21 @@ public class Installer
         return dirs;
     }
 
-    private void setExecutablePermissions( File mavenHome )
+    private void setExecutablePermissions( File appHome )
     {
         if ( isWindows() )
         {
             return;
         }
-        File mavenCommand = new File( mavenHome, "bin/ant" );
+        File appCommand = new File( appHome, "bin/ant" );
         String errorMessage = null;
         try
         {
-            ProcessBuilder pb = new ProcessBuilder( "chmod", "755", mavenCommand.getCanonicalPath() );
+            ProcessBuilder pb = new ProcessBuilder( "chmod", "755", appCommand.getCanonicalPath() );
             Process p = pb.start();
             if ( p.waitFor() == 0 )
             {
-                System.out.println( "Set executable permissions for: " + mavenCommand.getAbsolutePath() );
+                System.out.println( "Set executable permissions for: " + appCommand.getAbsolutePath() );
             }
             else
             {
@@ -155,8 +155,8 @@ public class Installer
         }
         if ( errorMessage != null )
         {
-            System.out.println( "Could not set executable permissions for: " + mavenCommand.getAbsolutePath() );
-            System.out.println( "Please do this manually if you want to use maven." );
+            System.out.println( "Could not set executable permissions for: " + appCommand.getAbsolutePath() );
+            System.out.println( "Please do this manually if you want to use ant." );
         }
     }
 
