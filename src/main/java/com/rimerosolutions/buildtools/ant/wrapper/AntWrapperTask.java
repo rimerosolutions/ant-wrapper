@@ -1,3 +1,18 @@
+/*
+ * Copyright 2013 Rimero Solutions
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.rimerosolutions.buildtools.ant.wrapper;
 
 import java.io.File;
@@ -16,28 +31,51 @@ import java.util.Properties;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 
-public class AntWrapperTask extends Task {
+/**
+ * Ant wrapper task.
+ *
+ * <strong>setDescription is ignored.</strong>
+ *
+ * @author Yves Zoundi
+ */
+public final class AntWrapperTask extends Task {
         private static String antVersion;
+        static final String TASK_DESCRIPTION = "Generate Ant Command Line Wrapper";
+        static final int BUFFER_SIZE = 1024;
         static final String DIST_URL_TEMPLATE = "http://archive.apache.org/dist/ant/binaries/apache-ant-%s-bin.zip";
-
+        static final String ANT_VERSION_FILE_LOCATION = "/org/apache/tools/ant/version.txt";
+        static final String ANT_VERSION_PROPERTY = "VERSION";
+        static final String FILE_URL_SCHEME = "file";
         static final String WRAPPER_PROPERTIES_FILE_NAME = "wrapper.properties";
         static final String WRAPPER_ROOT_FOLDER_NAME = "wrapper";
         static final String WRAPPER_JAR_FILE_NAME = "wrapper.jar";
+        static final String ANT_WRAPPER_PROPERTIES_FILE_COMMENTS = "Ant download properties";
         static final String DISTRIBUTION_URL_PROPERTY = "distributionUrl";
 
         static final String LAUNCHER_WINDOWS_FILE_NAME = "antw.bat";
+        static final String LCP_WINDOWS_FILE_NAME = "lcp.bat";
         static final String LAUNCHER_UNIX_FILE_NAME = "antw";
 
-        public void execute() {
+        static final String[] LAUNCHER_RESOURCES = {LAUNCHER_WINDOWS_FILE_NAME, LCP_WINDOWS_FILE_NAME, LAUNCHER_UNIX_FILE_NAME};
 
-                final String[] launcherFileNames = { LAUNCHER_WINDOWS_FILE_NAME, LAUNCHER_UNIX_FILE_NAME };
+        public String getDescription() {
+                return TASK_DESCRIPTION;
+        }
+
+        public void execute() {
+                copyScripts();
+                writeWrapperPropertiesFile();
+        }
+
+        private void copyScripts() {
                 final ClassLoader classLoader = AntWrapperTask.class.getClassLoader();
 
-                for (String launcherFileName : launcherFileNames) {
-                        InputStream mvnLauncherStream = classLoader.getResourceAsStream(launcherFileName);
+                for (String launcherFileName : LAUNCHER_RESOURCES) {
+                        InputStream launcherStream = classLoader.getResourceAsStream(launcherFileName);
                         File launcherFile = new File(getProject().getBaseDir(), launcherFileName);
+
                         try {
-                                writeToFile(mvnLauncherStream, launcherFile);
+                                writeToFile(launcherStream, launcherFile);
                         }
                         catch (Exception e) {
                                 throw new RuntimeException(e);
@@ -47,7 +85,9 @@ public class AntWrapperTask extends Task {
                                 log("Could not set executable flag on file: " + launcherFile.getAbsolutePath());
                         }
                 }
+        }
 
+        private void writeWrapperPropertiesFile() {
                 File wrapperDestFolder = new File(getProject().getBaseDir(), WRAPPER_ROOT_FOLDER_NAME);
                 wrapperDestFolder.mkdirs();
 
@@ -61,11 +101,10 @@ public class AntWrapperTask extends Task {
                         is = new FileInputStream(wrapperJar());
                         writeToFile(is, new File(wrapperDestFolder, WRAPPER_JAR_FILE_NAME));
                         fileOut = new FileOutputStream(file);
-                        props.store(fileOut, "Ant download properties");
-
+                        props.store(fileOut, ANT_WRAPPER_PROPERTIES_FILE_COMMENTS);
                 }
                 catch (IOException ioe) {
-
+                        throw new RuntimeException("Unable to store wrapper properties", ioe);
                 }
                 finally {
                         if (fileOut != null) {
@@ -89,16 +128,19 @@ public class AntWrapperTask extends Task {
 
         private static File wrapperJar() {
                 URI location;
+
                 try {
                         location = AntWrapperTask.class.getProtectionDomain().getCodeSource().getLocation().toURI();
                 }
                 catch (URISyntaxException e) {
                         throw new RuntimeException(e);
                 }
-                if (!location.getScheme().equals("file")) {
+
+                if (!location.getScheme().equals(FILE_URL_SCHEME)) {
                         throw new RuntimeException(
-                                        String.format("Cannot determine classpath for wrapper Jar from codebase '%s'.", location));
+                                                   String.format("Cannot determine classpath for wrapper Jar from codebase '%s'.", location));
                 }
+
                 return new File(location.getPath());
         }
 
@@ -111,7 +153,7 @@ public class AntWrapperTask extends Task {
                         fos = new FileOutputStream(filePath);
                         outChannel = fos.getChannel();
                         inChannel = Channels.newChannel(stream);
-                        ByteBuffer buffer = ByteBuffer.allocate(1024);
+                        ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
 
                         while (inChannel.read(buffer) >= 0 || buffer.position() > 0) {
                                 buffer.flip();
@@ -140,21 +182,32 @@ public class AntWrapperTask extends Task {
 
         public static synchronized String getAntVersion() throws BuildException {
                 if (antVersion == null) {
+                        InputStream in = null;
+
                         try {
                                 Properties props = new Properties();
-                                InputStream in = AntWrapperTask.class
-                                                .getResourceAsStream("/org/apache/tools/ant/version.txt");
+                                in = AntWrapperTask.class.getResourceAsStream(ANT_VERSION_FILE_LOCATION);
                                 props.load(in);
-                                in.close();
-                                antVersion = props.getProperty("VERSION");
+                                antVersion = props.getProperty(ANT_VERSION_PROPERTY);
                         }
                         catch (IOException ioe) {
                                 throw new BuildException("Could not load the version information:" + ioe.getMessage());
                         }
                         catch (NullPointerException npe) {
-                                throw new BuildException("Could not load the version information.");
+                                throw new BuildException("Could not load the Apache Ant version information.");
+                        }
+                        finally {
+                                if (in != null) {
+                                        try {
+                                                in.close();
+                                        }
+                                        catch (IOException ioe) {
+                                                throw new BuildException("Unable to close version info stream", ioe);
+                                        }
+                                }
                         }
                 }
+
                 return antVersion;
         }
 }

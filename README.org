@@ -11,26 +11,30 @@ What can you do with it?
 This project is a quick rip of [[https://github.com/bdemers/maven-wrapper][maven-wrapper]] adapted for Apache Ant.
 
 * Notes
-- This project was only tested with Apache Ant 1.7.0 and Apache Ant 1.8.0.
+- This project was only tested with Apache Ant 1.7.0 and above.
 - _Windows Support is TRUELY incomplete_, but present. It will be added once I get a Windows machine around to play with.
 
 * Building the program
-You'll need a [[http://maven.apache.org][maven]] installation. 
+You'll need a recent Apache Ant version (Only tested with Ant 1.7.0 and above).
 
-Using [[http://www.gradle.org][gradle]] as build system would probably have been more lightweight.
-However, having Maven already installed is not so uncommon these days...
+From the project directory, run the following command to build the jar file:
 
-From the project directory, run the following command:
+ : ant
 
- : mvn install
+You can also generate the Ant wrapper for the project itself!
+
+ : ant wrapper
+
+Once the wrapper is installed, you can play with it, as you please:
+ : ./antw -projecthelp
 
 * Installation
 
-The build process will generate the resulting jar in the project *target* folder.
+The build process will generate the resulting jar in the project *dist* folder.
 
 You have 2 installation options:
-- Drop the jar at the root of your project
-- Drop the jar in your *ANT_HOME/lib* folder
+- Drop the jar at the root of your project.
+- Drop the jar in your *ANT_HOME/lib* folder.
 
 * Usage
 ** Sample build script
@@ -54,13 +58,14 @@ You have 2 installation options:
 
 ** Wrapper generation
 
-With the above sample script, accordingly to the installation that you selected, run the following:
+With the above sample script, accordingly to the *taskdef* approach that you selected, run the following:
  : ant generatewrapper
 
-This will create 3 artefacts at the root of your project folder
-- antw : A unix command wrapper
-- antw.bat : A windows command wrapper (Untested, incomplete and likely not working yet)
-- wrapper : A folder containing the launcher supporting files
+This will create 4 main artefacts at the root of your project folder :
+- *antw* : A unix command wrapper.
+- *antw.bat* : A windows command wrapper (Untested, incomplete and likely not working yet).
+- *lcp.bat* : The usual windows classpath utility script.
+- *wrapper* : A folder containing the launcher supporting files.
 
 ** Testing
 Now from another Unix/Linux machine, copy your Ant project and run your ant tasks via the *antw* wrapper!

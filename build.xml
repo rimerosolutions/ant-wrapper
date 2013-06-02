@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="ant-wrapper" default="jar">
+  <!-- project properties -->
+  <property name="project.version" value="0.0.1-SNAPSHOT"/>
+  <property name="src.dir" value="src/main/java"/>
+  <property name="resources.dir" value="src/main/resources"/>
+  <property name="target.dir" value="target"/>
+  <property name="dist.dir" value="dist"/>
+  <property name="classes.dir" value="${target.dir}/classes"/>
+  <property name="lib.dir" value="lib"/>
+
+  <!-- wrapper file name properties -->
+  <property name="unix.wrapper.file" value="antw"/>
+  <property name="windows.wrapper.file" value="antw.bat"/>
+  <property name="windows.wrapper.helper" value="lcp.bat"/>
+  <property name="wrapper.dir" value="wrapper"/>
+  
+  <!-- javac properties -->
+  <property name="javac.source" value="1.5"/>
+  <property name="javac.target" value="1.5"/>
+
+  <!-- ivy properties -->
+  <property name="ivy.install.version" value="2.1.0-rc2" />
+  <condition property="ivy.home" value="${env.IVY_HOME}">
+    <isset property="env.IVY_HOME" />
+  </condition>
+  <property name="ivy.home" value="${user.home}/.ant" />
+  <property name="ivy.jar.dir" value="${ivy.home}/lib" />
+  <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar" />
+  <property name="ivy.lib.dir" value="${lib.dir}"/>
+
+  <echo> **** ANT PROJECT WRAPPER ${project.version} BUILD **** </echo>
+
+  <target name="download-ivy" unless="offline">
+    <echo>Fetching ivy.</echo>
+    <mkdir dir="${ivy.jar.dir}"/>
+    <!-- download Ivy from web site so that it can be used even without any special installation -->
+    <get src="http://repo2.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar"
+         dest="${ivy.jar.file}"
+         usetimestamp="true"/>
+  </target>
+
+  <target name="init-ivy" depends="download-ivy">
+    <!-- try to load ivy here from ivy home, in case the user has not already dropped
+         it into ant's lib dir (note that the latter copy will always take precedence).
+         We will not fail as long as local lib dir exists (it may be empty) and
+         ivy is in at least one of ant's lib dir or the local lib dir. -->
+    <path id="ivy.lib.path">
+      <fileset dir="${ivy.jar.dir}" includes="*.jar"/>
+    </path>
+    <taskdef resource="org/apache/ivy/ant/antlib.xml"
+             uri="antlib:org.apache.ivy.ant"
+             classpathref="ivy.lib.path"/>
+  </target>
+
+  <path id="project.classpath">
+    <fileset dir="${lib.dir}"/>
+  </path>
+
+  <target name="resolve" description="Retrieve dependencies with ivy" depends="init-ivy">
+    <echo>Fetching dependencies.</echo>
+    <ivy:retrieve sync="true" />
+  </target>
+
+  <target name="init" description="Create build folder layout" depends="resolve">
+    <echo>Setting up build layout.</echo>
+    <mkdir dir="${target.dir}"/>
+    <mkdir dir="${lib.dir}"/>
+    <mkdir dir="${classes.dir}"/>
+    <mkdir dir="${dist.dir}"/>
+  </target>
+
+  <target name="clean" description="Cleanup build">
+    <echo>Cleaning up build.</echo>
+    <delete dir="${target.dir}" failonerror="false"/>
+    <delete dir="${lib.dir}" failonerror="false"/>
+    <delete dir="${classes.dir}" failonerror="false"/>
+    <delete dir="${dist.dir}" failonerror="false"/>
+    <delete file="${unix.wrapper.file}" failonerror="false"/>
+    <delete file="${windows.wrapper.file}"  failonerror="false"/>
+    <delete file="${windows.wrapper.helper}" failonerror="false"/>
+    <delete dir="${wrapper.dir}" failonerror="false"/>
+  </target>
+
+  <target name="compile" depends="init" description="Compile sources">
+    <echo>Compiling sources.</echo>
+    <javac source="${javac.source}"
+           target="${javac.target}"
+           destdir="${classes.dir}"
+           includeantruntime="false">
+      <src path="${src.dir}" />
+      <classpath refid="project.classpath" />
+    </javac>
+  </target>
+
+  <target name="copyResources" depends="compile" description="Copy resources">
+    <echo>Copying project resources.</echo>
+    <copy todir="${classes.dir}">
+      <fileset dir="${resources.dir}"/>
+    </copy>
+  </target>
+
+  <target name="jar" depends="copyResources" description="Create main jar artefact">
+    <echo>Building jar.</echo>
+    <jar destfile="${dist.dir}/${ant.project.name}-${project.version}.jar">
+      <fileset dir="${classes.dir}"/>
+    </jar>
+  </target>
+
+  <target name="wrapper" depends="jar" description="Generate Ant wrapper">
+    <echo>Generating Ant wrapper.</echo>
+    <taskdef name="genAntWrapper" classname="com.rimerosolutions.buildtools.ant.wrapper.AntWrapperTask">
+      <classpath>
+        <pathelement location="${dist.dir}/${ant.project.name}-${project.version}.jar"/>
+      </classpath>
+    </taskdef>
+    <genAntWrapper/>
+  </target>
+</project>
