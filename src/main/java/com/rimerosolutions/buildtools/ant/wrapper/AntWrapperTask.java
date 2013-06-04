@@ -53,10 +53,11 @@ public final class AntWrapperTask extends Task {
         static final String DISTRIBUTION_URL_PROPERTY = "distributionUrl";
 
         static final String LAUNCHER_WINDOWS_FILE_NAME = "antw.bat";
+        static final String LAUNCHER_WINDOWSCMD_FILE_NAME = "antw.cmd";
         static final String LCP_WINDOWS_FILE_NAME = "lcp.bat";
         static final String LAUNCHER_UNIX_FILE_NAME = "antw";
 
-        static final String[] LAUNCHER_RESOURCES = {LAUNCHER_WINDOWS_FILE_NAME, LCP_WINDOWS_FILE_NAME, LAUNCHER_UNIX_FILE_NAME};
+        static final String[] LAUNCHER_RESOURCES = {LAUNCHER_WINDOWS_FILE_NAME, LAUNCHER_WINDOWSCMD_FILE_NAME, LCP_WINDOWS_FILE_NAME, LAUNCHER_UNIX_FILE_NAME};
 
         public String getDescription() {
                 return TASK_DESCRIPTION;

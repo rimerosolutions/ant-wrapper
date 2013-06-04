@@ -44,8 +44,22 @@ public class BootstrapMainStarter {
                 List<File> bootstrapJars = new ArrayList<File>();
 
                 for (File file : new File(antHome, "lib").listFiles()) {
-                        if (file.getName().endsWith(".jar")) {
+                        if (file.getName().endsWith("launcher.jar")) {
                                 bootstrapJars.add(file);
+                        }
+                }
+
+                String javaHome = System.getenv("JAVA_HOME");
+                
+                if (javaHome != null) {
+                        File toolsJar = new File(javaHome, "lib/tools.jar");
+                        File toolsJarOsx = new File(javaHome, "lib/classes.jar");
+                        if (toolsJar.exists()) {
+                                bootstrapJars.add(toolsJar);
+                        }
+
+                        if (toolsJarOsx.exists()) {
+                                bootstrapJars.add(toolsJarOsx);
                         }
                 }
 
