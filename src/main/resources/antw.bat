@@ -116,11 +116,11 @@ set _JAVACMD=%JAVACMD%
 
 if "%JAVA_HOME%" == "" goto noJavaHome
 if not exist "%JAVA_HOME%\bin\java.exe" goto noJavaHome
-if "%_JAVACMD%" == "" set _JAVACMD=%JAVA_HOME%\bin\java.exe
+if "%JAVA_COMMAND%" == "" set JAVA_COMMAND=%JAVA_HOME%\bin\java.exe
 goto checkJikes
 
 :noJavaHome
-if "%_JAVACMD%" == "" set _JAVACMD=java.exe
+if "%JAVA_COMMAND%" == "" set JAVA_COMMAND=java.exe
 
 :checkJikes
 if not "%JIKESPATH%"=="" goto runAntWithJikes
@@ -128,14 +128,14 @@ if not "%JIKESPATH%"=="" goto runAntWithJikes
 :runAnt
 if "%_USE_CLASSPATH%"=="no" goto runAntNoClasspath
 :runAntWithClasspath
-"%_JAVACMD%" %ANT_OPTS% -classpath "%ANT_HOME%\lib\ant-launcher.jar" "-Dant.home=%ANT_HOME%" com.rimerosolutions.buildtools.ant.wrapper.AntWrapperMain  %ANT_ARGS% %ANT_CMD_LINE_ARGS%
+"%JAVA_COMMAND%" %ANT_OPTS%  -classpath "%JAVA_HOME%\lib\tools.jar;.\wrapper\wrapper.jar" "-Dant.home=%ANT_HOME%" "-Djava.home=%JAVA_HOME%" com.rimerosolutions.buildtools.ant.wrapper.AntWrapperMain  %ANT_ARGS% %ANT_CMD_LINE_ARGS%
 rem Check the error code of the Ant build
 if not "%OS%"=="Windows_NT" goto onError
 set ANT_ERROR=%ERRORLEVEL%
 goto end
 
 :runAntNoClasspath
-"%_JAVACMD%" %ANT_OPTS% -classpath "%ANT_HOME%\lib\ant-launcher.jar" "-Dant.home=%ANT_HOME%" com.rimerosolutions.buildtools.ant.wrapper.AntWrapperMain  %ANT_ARGS% %ANT_CMD_LINE_ARGS%
+"%JAVA_COMMAND%" %ANT_OPTS%  -classpath "%JAVA_HOME%\lib\tools.jar;.\wrapper\wrapper.jar" "-Dant.home=%ANT_HOME%" "-Djava.home=%JAVA_HOME%" com.rimerosolutions.buildtools.ant.wrapper.AntWrapperMain  %ANT_ARGS% %ANT_CMD_LINE_ARGS%
 rem Check the error code of the Ant build
 if not "%OS%"=="Windows_NT" goto onError
 set ANT_ERROR=%ERRORLEVEL%
@@ -152,14 +152,14 @@ goto runAntWithJikes
 if "%_USE_CLASSPATH%"=="no" goto runAntWithJikesNoClasspath
 
 :runAntWithJikesAndClasspath
-"%_JAVACMD%" %ANT_OPTS% -classpath ".\wrapper\wrapper.jar" "-Dant.home=%ANT_HOME%" "-Djikes.class.path=%JIKESPATH%" com.rimerosolutions.buildtools.ant.wrapper.AntWrapperMain  %ANT_ARGS% %ANT_CMD_LINE_ARGS%
+"%JAVA_COMMAND%" %ANT_OPTS% -classpath "%JAVA_HOME%"\lib\tools.jar;.\wrapper\wrapper.jar "-Dant.home=%ANT_HOME%" "-Djava.home=%JAVA_HOME%" "-Djikes.class.path=%JIKESPATH%" com.rimerosolutions.buildtools.ant.wrapper.AntWrapperMain  %ANT_ARGS% %ANT_CMD_LINE_ARGS%
 rem Check the error code of the Ant build
 if not "%OS%"=="Windows_NT" goto onError
 set ANT_ERROR=%ERRORLEVEL%
 goto end
 
 :runAntWithJikesNoClasspath
-"%_JAVACMD%" %ANT_OPTS% -classpath ".\wrapper\wrapper.jar" "-Dant.home=%ANT_HOME%" "-Djikes.class.path=%JIKESPATH%" com.rimerosolutions.buildtools.ant.wrapper.AntWrapperMain  %ANT_ARGS% %ANT_CMD_LINE_ARGS%
+"%JAVA_COMMAND%" %ANT_OPTS% -classpath "%JAVA_HOME%\lib\tools.jar;.\wrapper\wrapper.jar "-Dant.home=%ANT_HOME%" "-Djava.home=%JAVA_HOME%" "-Djikes.class.path=%JIKESPATH%" com.rimerosolutions.buildtools.ant.wrapper.AntWrapperMain  %ANT_ARGS% %ANT_CMD_LINE_ARGS%
 rem Check the error code of the Ant build
 if not "%OS%"=="Windows_NT" goto onError
 set ANT_ERROR=%ERRORLEVEL%
@@ -186,7 +186,7 @@ for %%i in (1 10 100) do set err%%i=
 
 :end
 rem bug ID 32069: resetting an undefined env variable changes the errorlevel.
-if not "%_JAVACMD%"=="" set _JAVACMD=
+if not "%JAVA_COMMAND%"=="" set JAVA_COMMAND=
 if not "%_ANT_CMD_LINE_ARGS%"=="" set ANT_CMD_LINE_ARGS=
 
 if "%ANT_ERROR%"=="0" goto mainEnd
