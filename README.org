@@ -11,7 +11,8 @@ What can you do with it?
 This project is a quick rip of [[https://github.com/bdemers/maven-wrapper][maven-wrapper]] adapted for Apache Ant.
 
 * Notes
-This project was only tested with Apache Ant 1.7.0 and above.
+- This project was only tested with Apache Ant 1.7.0 and above.
+- The tool *might not work* for very complex builds, especially when *many classloaders* are involved.
 
 * Building the program
 You'll need a recent Apache Ant version (Only tested with Ant 1.7.0 and above).

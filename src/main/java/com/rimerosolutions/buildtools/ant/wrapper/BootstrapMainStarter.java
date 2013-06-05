@@ -44,7 +44,7 @@ public class BootstrapMainStarter {
                 List<File> bootstrapJars = new ArrayList<File>();
 
                 for (File file : new File(antHome, "lib").listFiles()) {
-                        if (file.getName().endsWith("launcher.jar")) {
+                        if (file.getName().endsWith(".jar")) {
                                 bootstrapJars.add(file);
                         }
                 }
