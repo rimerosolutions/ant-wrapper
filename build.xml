@@ -12,6 +12,7 @@
   <!-- wrapper file name properties -->
   <property name="unix.wrapper.file" value="antw"/>
   <property name="windows.wrapper.file" value="antw.bat"/>
+  <property name="windows.wrapper.cmd" value="antw.cmd"/>
   <property name="windows.wrapper.helper" value="lcp.bat"/>
   <property name="wrapper.dir" value="wrapper"/>
   
@@ -78,6 +79,7 @@
     <delete dir="${dist.dir}" failonerror="false"/>
     <delete file="${unix.wrapper.file}" failonerror="false"/>
     <delete file="${windows.wrapper.file}"  failonerror="false"/>
+    <delete file="${windows.wrapper.cmd}"  failonerror="false"/>
     <delete file="${windows.wrapper.helper}" failonerror="false"/>
     <delete dir="${wrapper.dir}" failonerror="false"/>
   </target>
