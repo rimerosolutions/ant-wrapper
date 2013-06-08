@@ -42,7 +42,8 @@ public final class AntWrapperTask extends Task {
         private static String antVersion;
         static final String TASK_DESCRIPTION = "Generate Ant Command Line Wrapper";
         static final int BUFFER_SIZE = 1024;
-        static final String DIST_URL_TEMPLATE = "http://archive.apache.org/dist/ant/binaries/apache-ant-%s-bin.zip";
+        static final String DEFAULT_BASE_DISTRIBUTION_URL = "http://archive.apache.org/dist/ant/binaries";
+        static final String ANT_BIN_FILENAME_TEMPLATE = "apache-ant-%s-bin.zip";
         static final String ANT_VERSION_FILE_LOCATION = "/org/apache/tools/ant/version.txt";
         static final String ANT_VERSION_PROPERTY = "VERSION";
         static final String FILE_URL_SCHEME = "file";
@@ -59,11 +60,19 @@ public final class AntWrapperTask extends Task {
 
         static final String[] LAUNCHER_RESOURCES = {LAUNCHER_WINDOWS_FILE_NAME, LAUNCHER_WINDOWSCMD_FILE_NAME, LCP_WINDOWS_FILE_NAME, LAUNCHER_UNIX_FILE_NAME};
 
+        /** Distribution Url optional parameter */
+        private String baseDistributionUrl;
+
+        /** Sets the root URL containing the Apache Ant binaries in zip format */
+        public void setBaseDistributionUrl(String baseDistributionUrl) {
+                this.baseDistributionUrl = baseDistributionUrl;
+        }
+
         public String getDescription() {
                 return TASK_DESCRIPTION;
         }
 
-        public void execute() {
+        public void execute() throws BuildException {
                 copyScripts();
                 writeWrapperPropertiesFile();
         }
@@ -79,7 +88,7 @@ public final class AntWrapperTask extends Task {
                                 writeToFile(launcherStream, launcherFile);
                         }
                         catch (Exception e) {
-                                throw new RuntimeException(e);
+                                throw new BuildException(e);
                         }
 
                         if (!launcherFile.setExecutable(true)) {
@@ -93,7 +102,23 @@ public final class AntWrapperTask extends Task {
                 wrapperDestFolder.mkdirs();
 
                 Properties props = new Properties();
-                props.put(DISTRIBUTION_URL_PROPERTY, String.format(DIST_URL_TEMPLATE, getAntVersion()));
+
+                StringBuilder binaryFileLocation = new StringBuilder(248);
+
+                if (baseDistributionUrl == null) {
+                        baseDistributionUrl = DEFAULT_BASE_DISTRIBUTION_URL;
+                }
+
+                binaryFileLocation.append(baseDistributionUrl);
+
+                if (!baseDistributionUrl.endsWith("/")) {
+                        binaryFileLocation.append('/');
+                }
+
+                binaryFileLocation.append(ANT_BIN_FILENAME_TEMPLATE);
+
+                props.put(DISTRIBUTION_URL_PROPERTY, String.format(binaryFileLocation.toString(), getAntVersion()));
+
                 File file = new File(wrapperDestFolder, WRAPPER_PROPERTIES_FILE_NAME);
                 FileOutputStream fileOut = null;
                 InputStream is = null;
@@ -105,7 +130,7 @@ public final class AntWrapperTask extends Task {
                         props.store(fileOut, ANT_WRAPPER_PROPERTIES_FILE_COMMENTS);
                 }
                 catch (IOException ioe) {
-                        throw new RuntimeException("Unable to store wrapper properties", ioe);
+                        throw new BuildException("Unable to store wrapper properties", ioe);
                 }
                 finally {
                         if (fileOut != null) {
@@ -113,7 +138,7 @@ public final class AntWrapperTask extends Task {
                                         fileOut.close();
                                 }
                                 catch (IOException ioe) {
-                                        throw new RuntimeException(ioe);
+                                        throw new BuildException(ioe);
                                 }
                         }
                         if (is != null) {
@@ -121,7 +146,7 @@ public final class AntWrapperTask extends Task {
                                         fileOut.close();
                                 }
                                 catch (IOException ioe) {
-                                        throw new RuntimeException(ioe);
+                                        throw new BuildException(ioe);
                                 }
                         }
                 }
@@ -134,12 +159,11 @@ public final class AntWrapperTask extends Task {
                         location = AntWrapperTask.class.getProtectionDomain().getCodeSource().getLocation().toURI();
                 }
                 catch (URISyntaxException e) {
-                        throw new RuntimeException(e);
+                        throw new BuildException(e);
                 }
 
                 if (!location.getScheme().equals(FILE_URL_SCHEME)) {
-                        throw new RuntimeException(
-                                                   String.format("Cannot determine classpath for wrapper Jar from codebase '%s'.", location));
+                        throw new BuildException(String.format("Cannot determine classpath for wrapper Jar from codebase '%s'.", location));
                 }
 
                 return new File(location.getPath());
