@@ -6,13 +6,13 @@ This is an [[http://ant.apache.org][Apache Ant]] command line wrapper similar to
 
 What can you do with it?
 - You can generate an Ant wrapper for a project from a machine with an existing Ant installation.
-- You can share the project without requiring an existing Ant installation from the 'builder'.
+- You can share the project without requiring an existing Ant installation from the 'application builder'.
 
 This project is a quick rip of [[https://github.com/bdemers/maven-wrapper][maven-wrapper]] adapted for Apache Ant.
 
 * Notes
-- This project was only tested with Apache Ant 1.7.0 and above.
-- The tool *might not work* for very complex builds, especially when *many classloaders* are involved.
+- This project was only tested with Apache Ant 1.7.0 and above, under Mac OSX, Linux and Windows.
+- The tool has not been tested with very complex builds where *many classloaders* could be involved.
 
 * Building the program
 You'll need a recent Apache Ant version (Only tested with Ant 1.7.0 and above).
@@ -33,8 +33,8 @@ Once the wrapper is installed, you can play with it, as you please:
 The build process will generate the resulting jar in the project *dist* folder.
 
 You have 2 installation options:
-- Drop the jar at the root of your project.
-- Drop the jar in your *ANT_HOME/lib* folder.
+- Drop the jar at the root of your project or any other given location (Ant taskdef with classpath).
+- Drop the jar in your *ANT_HOME/lib* folder (ant taskdef without any classpath setup).
 
 * Usage
 ** Sample build script
@@ -70,4 +70,5 @@ This will create 5 main artefacts at the root of your project folder :
 - *wrapper* : A folder containing the launcher supporting files.
 
 ** Testing
-Now from another Unix/Linux machine, copy your Ant project and run your ant tasks via the *antw* wrapper!
+- Run your current project via the Ant wrapper instead of your local Ant installation
+- Build your project with the Ant wrapper on a machine that doesn't have an existing Ant installation
