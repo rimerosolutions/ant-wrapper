@@ -32,7 +32,7 @@ Once the wrapper is installed, you can play with it, as you please:
 
 * Installation
 
-The build process will generate the resulting jar in the project *dist* folder.
+The build process will generate the resulting jar archive in the project *dist* folder.
 
 You have 2 installation options:
 - Drop the jar at the root of your existing projects or any other given location (Ant taskdef with classpath).
@@ -42,7 +42,8 @@ You have 2 installation options:
 ** Sample build script
  : <?xml version="1.0"?>
  : <project name="AntWrapperProject" default="generatewrapper">
- : <!-- The optional Ant Task also accepts a baseDistributionUrl properties for the Ant zip files binaries -->
+ : <!-- The optional Ant Task also accepts a baseDistributionUrl 
+ :      properties for the Ant zip files binaries -->
  : <!-- if you dropped the wrapper jar in ANT_HOME/lib -->
  : <taskdef name="genAntWrapper" classname="com.rimerosolutions.buildtools.ant.wrapper.AntWrapperTask"/>
  : 	
@@ -56,6 +57,7 @@ You have 2 installation options:
  : 
  : 	<target name="generatewrapper">
  :      <genAntWrapper/>
+ :      <!-- <genAntWrapper baseDistributionUrl="http://archive.apache.org/dist/ant/binaries"/> -->
  :     </target>
  : </project>
 
@@ -79,6 +81,7 @@ It's also possible to use [[http://ant.apache.org/manual/Types/antlib.html][Antl
  : 
  :  <target name="generatewrapper">
  :    <wrapper:wrapper/>
+ :    <!-- <wrapper:wrapper baseDistributionUrl="http://archive.apache.org/dist/ant/binaries"/> -->
  :  </target>
  : </project>
 
