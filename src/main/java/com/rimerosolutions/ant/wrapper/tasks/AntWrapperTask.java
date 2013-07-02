@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.rimerosolutions.buildtools.ant.wrapper;
+package com.rimerosolutions.ant.wrapper.tasks;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -58,6 +58,7 @@ public final class AntWrapperTask extends Task {
         static final String LCP_WINDOWS_FILE_NAME = "lcp.bat";
         static final String LAUNCHER_UNIX_FILE_NAME = "antw";
 
+        static final String RESOURCES_LOCATION = "com/rimerosolutions/ant/wrapper";
         static final String[] LAUNCHER_RESOURCES = {
                 LAUNCHER_WINDOWS_FILE_NAME,
                 LAUNCHER_WINDOWSCMD_FILE_NAME,
@@ -73,20 +74,26 @@ public final class AntWrapperTask extends Task {
                 this.baseDistributionUrl = baseDistributionUrl;
         }
 
+        /** {@inheritDoc} */
+        @Override
         public String getDescription() {
                 return TASK_DESCRIPTION;
         }
 
+        /** {@inheritDoc} */
+        @Override
         public void execute() throws BuildException {
                 copyScripts();
                 writeWrapperPropertiesFile();
         }
 
         private void copyScripts() {
-                final ClassLoader classLoader = AntWrapperTask.class.getClassLoader();
+                final ClassLoader classLoader = getClass().getClassLoader();
 
                 for (String launcherFileName : LAUNCHER_RESOURCES) {
-                        InputStream launcherStream = classLoader.getResourceAsStream(launcherFileName);
+                        InputStream launcherStream = classLoader.getResourceAsStream(RESOURCES_LOCATION + "/" + launcherFileName);
+                        
+                        getProject().log("Launcher stream is " + launcherFileName + ", Not null??" + (launcherStream!=null) + ", location:" + RESOURCES_LOCATION + "/" + launcherFileName);
                         File launcherFile = new File(getProject().getBaseDir(), launcherFileName);
 
                         try {
@@ -210,7 +217,7 @@ public final class AntWrapperTask extends Task {
                 }
         }
 
-        public static synchronized String getAntVersion() throws BuildException {
+        private static synchronized String getAntVersion() throws BuildException {
                 if (antVersion == null) {
                         InputStream in = null;
 

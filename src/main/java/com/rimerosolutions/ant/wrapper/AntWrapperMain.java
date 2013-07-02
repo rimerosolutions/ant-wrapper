@@ -1,4 +1,4 @@
-package com.rimerosolutions.buildtools.ant.wrapper;
+package com.rimerosolutions.ant.wrapper;
 
 import java.io.File;
 import java.net.URI;

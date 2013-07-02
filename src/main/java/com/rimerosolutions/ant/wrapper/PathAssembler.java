@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.rimerosolutions.buildtools.ant.wrapper;
+package com.rimerosolutions.ant.wrapper;
 
 import java.io.File;
 import java.math.BigInteger;

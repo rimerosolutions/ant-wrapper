@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.rimerosolutions.buildtools.ant.wrapper;
+package com.rimerosolutions.ant.wrapper;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;

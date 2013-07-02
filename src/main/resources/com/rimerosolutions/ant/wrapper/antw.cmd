@@ -67,8 +67,8 @@ if lcp\='' then lcp = '-classpath' lcp
 
 cmd = java opts lcp '-jar' ANT_HOME ||'\lib\ant-launcher.jar' settings args antarg
 launcher = stream(ANT_HOME ||'\lib\ant-launcher.jar', 'C', 'query exists')
-if launcher = '' then entry = 'com.rimerosolutions.buildtools.ant.wrapper.AntWrapperMain'
-else entry = 'com.rimerosolutions.buildtools.ant.wrapper.AntWrapperMain'
+if launcher = '' then entry = 'com.rimerosolutions.ant.wrapper.AntWrapperMain'
+else entry = 'com.rimerosolutions.ant.wrapper.AntWrapperMain'
 java opts lcp entry settings args antarg
 
 x = endlocal()

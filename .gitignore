@@ -1,1 +1,8 @@
 .DS_Store
+.classpath
+.project
+.settings
+README.html
+TAGS
+dist
+lib

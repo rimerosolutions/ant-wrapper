@@ -331,7 +331,7 @@ fi
 
 LOCALCLASSPATH="$LOCALCLASSPATH:./wrapper/wrapper.jar"
 
-ant_exec_command="exec \"$JAVACMD\" $ANT_OPTS -classpath \"$LOCALCLASSPATH\" -Dant.home=\"$ANT_HOME\" -Dant.library.dir=\"$ANT_LIB\" $ant_sys_opts com.rimerosolutions.buildtools.ant.wrapper.AntWrapperMain"
+ant_exec_command="exec \"$JAVACMD\" $ANT_OPTS -classpath \"$LOCALCLASSPATH\" -Dant.home=\"$ANT_HOME\" -Dant.library.dir=\"$ANT_LIB\" $ant_sys_opts com.rimerosolutions.ant.wrapper.AntWrapperMain"
 # $* 
 #-cp \"$CLASSPATH\""
 if $ant_exec_debug ; then

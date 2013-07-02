@@ -1,10 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <ivy-module version="2.0"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd">
-  <info organisation="rimerosolutions" module="ant-wrapper" />
+
+  <info organisation="com.rimerosolutions.ant" module="ant-wrapper" status="release" >
+    <license name="The Apache Software License, Version 2.0"
+             url="http://www.apache.org/licenses/LICENSE-2.0.txt" />
+    <description homepage="https://github.com/rimerosolutions/ant-wrapper">
+      This is an Apache Ant Command Line Wrapper similar to the Gradle Command Line Wrapper.
+    </description>
+  </info>
+
   <configurations defaultconfmapping="default">
     <conf name="default" />
   </configurations>
+  
+  <publications xmlns:e="urn:ant.apache.org:ivy-extras">
+    <artifact name="ant-wrapper" type="jar" ext="jar" />
+    <artifact name="ant-wrapper" type="pom" ext="pom" />
+    <artifact name="ant-wrapper" type="source" ext="jar" e:classifier="sources" />
+    <artifact name="ant-wrapper" type="javadoc" ext="jar" e:classifier="javadoc" />
+  </publications>
+
   <dependencies>
     <dependency org="org.apache.ant" name="ant-launcher" rev="1.7.0" />
     <dependency org="org.apache.ant" name="ant" rev="1.7.0" />

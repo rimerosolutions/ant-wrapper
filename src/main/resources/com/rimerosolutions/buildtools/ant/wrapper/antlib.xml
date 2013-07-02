@@ -1,4 +1,0 @@
-<?xml version="1.0"?>
-<antlib>
-  <taskdef name="wrapper" classname="com.rimerosolutions.buildtools.ant.wrapper.AntWrapperTask"/>
-</antlib>
