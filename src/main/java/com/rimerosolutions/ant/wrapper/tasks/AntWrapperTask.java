@@ -92,8 +92,6 @@ public final class AntWrapperTask extends Task {
 
                 for (String launcherFileName : LAUNCHER_RESOURCES) {
                         InputStream launcherStream = classLoader.getResourceAsStream(RESOURCES_LOCATION + "/" + launcherFileName);
-                        
-                        getProject().log("Launcher stream is " + launcherFileName + ", Not null??" + (launcherStream!=null) + ", location:" + RESOURCES_LOCATION + "/" + launcherFileName);
                         File launcherFile = new File(getProject().getBaseDir(), launcherFileName);
 
                         try {
