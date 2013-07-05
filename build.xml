@@ -17,13 +17,24 @@ limitations under the License.
 <project name="ant-wrapper"
          default="jar"
          xmlns:ivy="antlib:org.apache.ivy.ant"
-         xmlns:wrapper="antlib:com.rimerosolutions.ant.wrapper.tasks">
+         xmlns:wrapper="antlib:com.rimerosolutions.ant.wrapper.tasks"
+         xmlns:git="antlib:smartrics.ant.git">
+
   <!-- reuse the user's gradle properties if any for sensitive info such as gpg, credentials -->
   <property file="${user.home}/.gradle/gradle.properties"/>
+  <property file="${basedir}/build.properties"/>
 
   <!-- project properties -->
-  <property name="project.version" value="0.0.1-SNAPSHOT"/>
-  <property name="project.revision" value="${project.version}"/>
+  <property name="release.properties.filename" value="release.properties"/>
+  <property file="${release.properties.filename}"/>
+  <property name="build.number" value="${build.major.number}.${build.minor.number}.${build.revision.number}"/>
+
+  <condition property="project.version.classifier" value="-SNAPSHOT">
+    <equals casesensitive="true" arg1="${snapshot}" arg2="true"/>
+  </condition>
+
+  <property name="project.version.classifier" value=""/>
+  <property name="project.version" value="${build.number}${project.version.classifier}"/>
   <property name="src.dir" value="src/main/java"/>
   <property name="resources.dir" value="src/main/resources"/>
   <property name="target.dir" value="target"/>
@@ -32,18 +43,11 @@ limitations under the License.
   <property name="classes.dir" value="${target.dir}/classes"/>
   <property name="lib.dir" value="lib"/>
 
-  <!-- wrapper file name properties -->
-  <property name="unix.wrapper.file" value="antw"/>
-  <property name="windows.wrapper.file" value="antw.bat"/>
-  <property name="windows.wrapper.cmd" value="antw.cmd"/>
-  <property name="windows.wrapper.helper" value="lcp.bat"/>
-  <property name="wrapper.dir" value="wrapper"/>
-
   <!-- javac properties -->
-  <property name="javac.source" value="1.5"/>
-  <property name="javac.target" value="1.5"/>
+  <property name="javac.source" value="1.6"/>
+  <property name="javac.target" value="1.6"/>
 
-  <!-- bountycastle properties, ivy signing with gpg -->
+  <!-- bountycastle properties, ivy signing with pgp -->
   <property name="bountycastle.version" value="1.45"/>
   <property name="bountycastle.classifier" value="jdk16"/>
   <property name="bcpg.jar.file" value="bcpg-${bountycastle.classifier}-${bountycastle.version}.jar"/>
@@ -64,11 +68,17 @@ limitations under the License.
   <property name="maven.repo.sonatype.releases" value="sonatype-releases"/>
   <property name="maven.repo.sonatype.snapshots" value="sonatype-snapshots"/>
 
+  <!-- release properties -->
+  <property name="release.properties.filename" value="release.properties"/>
+  <property file="${release.properties.filename}"/>
+  <property name="build.number" value="${build.major.number}.${build.minor.number}.${build.revision.number}"/>
+
   <!-- sonatype deployment conditions -->
   <condition property="sonatype.deployment.enabled">
     <and>
       <isset property="signing.keyId"/>
       <isset property="signing.password"/>
+      <isset property="signing.name"/>
       <isset property="signing.secretKeyRingFile"/>
       <isset property="sonatypeUsername"/>
       <isset property="sonatypePassword"/>
@@ -78,29 +88,26 @@ limitations under the License.
   <condition property="sonatype.deployment.snapshots.enabled">
     <and>
       <isset property="sonatype.deployment.enabled"/>
-      <contains casesensitive="true" string="${project.version}" substring="-SNAPSHOT"/>
+      <equals casesensitive="false" arg1="${snapshot}" arg2="true"/>
     </and>
   </condition>
 
   <condition property="sonatype.deployment.releases.enabled">
-    <and>
-      <isset property="sonatype.deployment.enabled"/>
-      <not>
-        <isset property="sonatype.deployment.snapshots.enabled"/>
-      </not>
-    </and>
+    <not>
+      <isset property="sonatype.deployment.snapshots.enabled"/>
+    </not>
   </condition>
 
   <tstamp>
     <format property="build.current.time" pattern="yyyyMMdd_HHmmss" />
   </tstamp>
 
-  <echo>**** Ant Command Line Wrapper ${project.version} BUILD ****</echo>
-
-  <!-- ****************************************** -->
+  <echo>Ant Command Line Wrapper ${project.version}.</echo>
+  
+    <!-- ****************************************** -->
   <!-- ivy related targets -->
   <!-- ****************************************** -->
-  <target name="download-ivy" unless="offline" description="Fetch Apache Ivy">
+  <target name="-bootstrap-build" unless="offline">
     <echo>Fetching ivy.</echo>
     <mkdir dir="${ivy.jar.dir}"/>
     <!-- download Ivy from web site so that it can be used even without any special installation -->
@@ -118,7 +125,7 @@ limitations under the License.
          usetimestamp="true"/>
   </target>
 
-  <target name="init-ivy" depends="download-ivy" description="Setup Apache Ivy">
+  <target name="-init-ivy" depends="-bootstrap-build">
     <echo>Initializing Apache Ivy.</echo>
     <!-- try to load ivy here from ivy home, in case the user has not already dropped
          it into ant's lib dir (note that the latter copy will always take precedence).
@@ -130,22 +137,82 @@ limitations under the License.
 
     <taskdef resource="org/apache/ivy/ant/antlib.xml"
              uri="antlib:org.apache.ivy.ant"
-             classpathref="ivy.lib.path"/>
+             classpathref="ivy.lib.path"/>    
   </target>
 
-  <path id="project.classpath">
-    <fileset dir="${lib.dir}"/>
-  </path>
-
-  <target name="resolve" depends="init-ivy" description="Retrieve dependencies with ivy">
+  <target name="-resolve" depends="-init-ivy">
     <echo>Fetching dependencies.</echo>
-    <ivy:retrieve sync="true" />
+    <ivy:retrieve pattern="${lib.dir}/[conf]/[artifact].[ext]" sync="true"/>
+    <ivy:cachepath pathid="compile.classpath" conf="compile" />
+    <ivy:cachepath pathid="release.classpath" conf="release" />
+
+    <taskdef uri="antlib:smartrics.ant.git"
+           resource="jgit-ant-lib.xml"
+           classpathref="release.classpath"/>
   </target>
+
+  <!-- ****************************************** -->
+  <!-- release related targets -->
+  <!-- ****************************************** -->
+
+  <condition property="snapshot-build">
+    <and>
+      <isset property="snapshot"/>
+      <equals arg1="true" arg2="${snapshot}"/>
+    </and>
+  </condition>
+
+  <target name="new-release-fix">
+    <propertyfile file="${release.properties.filename}">
+      <entry key="build.revision.number" type="int" operation="+" value="1" pattern="0"/>
+    </propertyfile>
+  </target>
+
+  <target name="new-release-feature">
+    <propertyfile file="${release.properties.filename}">
+      <entry key="build.minor.number" type="int" operation="+" value="1" pattern="0"/>
+      <entry key="build.revision.number" type="int" value="0" pattern="0"/>
+    </propertyfile>
+  </target>
+
+  <target name="new-release-major">
+    <propertyfile file="${release.properties.filename}">
+      <entry key="build.major.number" type="int" operation="+" value="1" pattern="0"/>
+      <entry key="build.minor.number" type="int" value="0" pattern="0"/>
+      <entry key="build.revision.number" type="int" value="0" pattern="0"/>
+    </propertyfile>
+  </target>
+
+  <target name="-pre-release">    
+    <echo>Checking tree modifications before release.</echo>
+    <git:git localDirectory="${basedir}" verbose="true">
+      <git:uptodate modificationExistProperty="tree.modified"/>
+    </git:git>
+  </target>
+
+  <target name="-commit-release" depends="-pre-release" if="tree.modified">
+    <echo>Committing before release SCM tagging.</echo>
+    <git:git localDirectory="${basedir}" verbose="true">
+      <git:commit message="preparing release ${build.number}"/>
+      <git:uptodate failOnError="true"/>
+      <git:push/>
+    </git:git>
+  </target>
+
+  <target name="-tag-release" depends="-commit-release" unless="snapshot-build">
+    <echo>Tagging release ${build.number}.</echo>
+    <git:git localDirectory="${basedir}" verbose="true">
+      <git:tag name="${build.number}"/>
+      <git:push/>
+    </git:git>
+  </target>
+
+  <target name="do-release" depends="-tag-release" description="Perform a release"/>
 
   <!-- ****************************************** -->
   <!-- general build targets -->
   <!-- ****************************************** -->
-  <target name="init" depends="resolve" description="Create build folder layout">
+  <target name="init" depends="-resolve" description="Create build folder layout">
     <echo>Setting up build layout.</echo>
     <mkdir dir="${target.dir}"/>
     <mkdir dir="${lib.dir}"/>
@@ -160,11 +227,6 @@ limitations under the License.
     <delete dir="${lib.dir}" failonerror="false"/>
     <delete dir="${classes.dir}" failonerror="false"/>
     <delete dir="${dist.dir}" failonerror="false"/>
-    <delete dir="${wrapper.dir}" failonerror="false"/>
-    <delete file="${unix.wrapper.file}" failonerror="false"/>
-    <delete file="${windows.wrapper.file}"  failonerror="false"/>
-    <delete file="${windows.wrapper.cmd}"  failonerror="false"/>
-    <delete file="${windows.wrapper.helper}" failonerror="false"/>
   </target>
 
   <target name="compile" depends="init" description="Compile sources">
@@ -174,7 +236,7 @@ limitations under the License.
            destdir="${classes.dir}"
            includeantruntime="false">
       <src path="${src.dir}" />
-      <classpath refid="project.classpath" />
+      <classpath refid="compile.classpath" />
     </javac>
   </target>
 
@@ -188,13 +250,13 @@ limitations under the License.
   <!-- ****************************************** -->
   <!-- build artifacts generation -->
   <!-- ****************************************** -->
-
   <target name="jar" depends="copy-resources" description="Create main jar artefact">
     <echo>Building jar.</echo>
     <jar destfile="${dist.dir}/${ant.project.name}.jar">
       <manifest>
         <attribute name="Built-By" value="${user.name}"/>
-        <attribute name="Implementation-Title" value="ant-wrapper"/>
+        <attribute name="Built-Date" value="${build.current.time}"/>
+        <attribute name="Implementation-Title" value="${ant.project.name}"/>
         <attribute name="Implementation-Version" value="${project.version}"/>
         <attribute name="Implementation-Vendor" value="Rimero Solutions Inc."/>
       </manifest>
@@ -211,13 +273,10 @@ limitations under the License.
              author="true"
              version="true"
              use="true"
-             windowtitle="Ant Command Line Wrapper API">
-      <classpath>
-        <path refid="ivy.lib.path"/>
-        <fileset dir="${lib.dir}"/>
-      </classpath>
+             windowtitle="Ant Command Line Wrapper API.">
+      <classpath refid="compile.classpath"/>
       <doctitle><![CDATA[<h1>Ant Command Line Wrapper API</h1>]]></doctitle>
-      <bottom><![CDATA[<i>Copyright &#169; 2013 Rimero Solutions. All Rights Reserved.</i>]]></bottom>
+      <bottom><![CDATA[<i>Copyright &#169; 2013 Rimero Solutions Inc. All Rights Reserved.</i>]]></bottom>
       <link href="http://download.oracle.com/javase/6/docs/api/" />
       <link href="http://javadoc.haefelinger.it/org.apache.ant/1.7.1/"/>
     </javadoc>
@@ -244,7 +303,7 @@ limitations under the License.
     <echo>Generating Maven POM.</echo>
     <ivy:makepom ivyfile="${basedir}/ivy.xml"
                  pomfile="${dist.dir}/pom.origi">
-      <mapping conf="default" scope="compile"/>
+      <mapping conf="compile" scope="compile"/>
     </ivy:makepom>
 
     <!-- fix the pom -->
@@ -268,7 +327,7 @@ limitations under the License.
     <sequential>
       <echo>Publishing build artifacts to your Maven repository with id @{mavenRepoId}.</echo>
       <ivy:publish resolver="@{mavenRepoId}"
-                   pubrevision="${project.revision}"
+                   pubrevision="${project.version}"
                    overwrite="true"
                    forcedeliver="true"
                    publishivy="true">
@@ -278,24 +337,26 @@ limitations under the License.
   </macrodef>
 
   <target name="maven-publish-local"
-          depends="generate-pom,resolve"
+          depends="generate-pom,-resolve,do-release"
           description="Publish build artifacts to the local Maven repository">
     <maven-publish mavenRepoId="${maven.repo.local}"/>
   </target>
 
-  <target name="maven-publish-sonatype-release"
-          depends="generate-pom,resolve"
-          if="sonatype.deployment.releases.enabled"
-          description="Publish build artifacts to the Sonatype Releases repository">
+  <target name="-maven-publish-sonatype-release"
+          depends="generate-pom,-resolve,do-release"
+          if="sonatype.deployment.releases.enabled">
     <maven-publish mavenRepoId="${maven.repo.sonatype.releases}"/>
   </target>
 
-  <target name="maven-publish-sonatype-snapshots"
-          depends="generate-pom,resolve"
-          if="sonatype.deployment.snapshots.enabled"
-          description="Publish build artifacts to the Sonatype Snapshots repository">
+  <target name="-maven-publish-sonatype-snapshots"
+          depends="generate-pom,-resolve"
+          if="sonatype.deployment.snapshots.enabled">
     <maven-publish mavenRepoId="${maven.repo.sonatype.snapshots}"/>
   </target>
+
+  <target name="maven-publish-remote"
+          depends="-maven-publish-sonatype-release,-maven-publish-sonatype-snapshots"
+          description="Publish build artifacts to the Sonatype Snapshots repository"/>
 
   <!-- ****************************************** -->
   <!-- wrapper generation -->
