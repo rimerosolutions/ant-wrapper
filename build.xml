@@ -46,6 +46,13 @@ limitations under the License.
   <!-- javac properties -->
   <property name="javac.source" value="1.6"/>
   <property name="javac.target" value="1.6"/>
+  
+   <!-- wrapper file name properties -->
+  <property name="unix.wrapper.file" value="antw"/>
+  <property name="windows.wrapper.file" value="antw.bat"/>
+  <property name="windows.wrapper.cmd" value="antw.cmd"/>
+  <property name="windows.wrapper.helper" value="lcp.bat"/>
+  <property name="wrapper.dir" value="wrapper"/>
 
   <!-- bountycastle properties, ivy signing with pgp -->
   <property name="bountycastle.version" value="1.45"/>
@@ -103,8 +110,8 @@ limitations under the License.
   </tstamp>
 
   <echo>Ant Command Line Wrapper ${project.version}.</echo>
-  
-    <!-- ****************************************** -->
+
+  <!-- ****************************************** -->
   <!-- ivy related targets -->
   <!-- ****************************************** -->
   <target name="-bootstrap-build" unless="offline">
@@ -137,7 +144,7 @@ limitations under the License.
 
     <taskdef resource="org/apache/ivy/ant/antlib.xml"
              uri="antlib:org.apache.ivy.ant"
-             classpathref="ivy.lib.path"/>    
+             classpathref="ivy.lib.path"/>
   </target>
 
   <target name="-resolve" depends="-init-ivy">
@@ -147,8 +154,8 @@ limitations under the License.
     <ivy:cachepath pathid="release.classpath" conf="release" />
 
     <taskdef uri="antlib:smartrics.ant.git"
-           resource="jgit-ant-lib.xml"
-           classpathref="release.classpath"/>
+             resource="jgit-ant-lib.xml"
+             classpathref="release.classpath"/>
   </target>
 
   <!-- ****************************************** -->
@@ -183,7 +190,7 @@ limitations under the License.
     </propertyfile>
   </target>
 
-  <target name="-pre-release">    
+  <target name="-pre-release">
     <echo>Checking tree modifications before release.</echo>
     <git:git localDirectory="${basedir}" verbose="true">
       <git:uptodate modificationExistProperty="tree.modified"/>
@@ -227,6 +234,11 @@ limitations under the License.
     <delete dir="${lib.dir}" failonerror="false"/>
     <delete dir="${classes.dir}" failonerror="false"/>
     <delete dir="${dist.dir}" failonerror="false"/>
+    <delete dir="${wrapper.dir}" failonerror="false"/>
+    <delete file="${unix.wrapper.file}" failonerror="false"/>
+    <delete file="${windows.wrapper.file}"  failonerror="false"/>
+    <delete file="${windows.wrapper.cmd}"  failonerror="false"/>
+    <delete file="${windows.wrapper.helper}" failonerror="false"/>
   </target>
 
   <target name="compile" depends="init" description="Compile sources">
