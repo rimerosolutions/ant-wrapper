@@ -28,8 +28,8 @@ limitations under the License.
 
   <configurations defaultconfmapping="default">
     <conf name="default" />
-    <conf name="compile" />
-    <conf name="release" visibility="private" />
+    <conf name="compile" description="Compile-time dependencies"/>
+    <conf name="release" visibility="private" description="Ant Git Tasks release dependencies"/>
   </configurations>
 
   <publications xmlns:e="urn:ant.apache.org:ivy-extras">
@@ -44,7 +44,7 @@ limitations under the License.
     <dependency org="org.apache.ant" name="ant-launcher" rev="1.7.0" conf="compile->default"/>
     <dependency org="org.apache.ant" name="ant" rev="1.7.0" conf="compile->default"/>
     <!-- release dependencies -->
-    <dependency org="com.rimerosolutions.ant" name="ant-git-tasks" rev="0.0.1-SNAPSHOT" conf="release->default"/>
+    <dependency org="com.rimerosolutions.ant" name="ant-git-tasks" rev="0.0.1-SNAPSHOT" changing="true" conf="release->default"/>
      <dependency org="org.eclipse.jgit" name="org.eclipse.jgit.ant" rev="3.0.0.201306101825-r" conf="release->default"/>
     <dependency org="org.eclipse.jgit" name="org.eclipse.jgit" rev="3.0.0.201306101825-r" conf="release->default"/>
     <dependency org="com.jcraft" name="jsch" rev="0.1.50" conf="release->default"/>

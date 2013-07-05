@@ -18,7 +18,7 @@ limitations under the License.
          default="jar"
          xmlns:ivy="antlib:org.apache.ivy.ant"
          xmlns:wrapper="antlib:com.rimerosolutions.ant.wrapper.tasks"
-         xmlns:git="antlib:smartrics.ant.git">
+         xmlns:git="antlib:com.rimerosolutions.ant.git">
 
   <!-- reuse the user's gradle properties if any for sensitive info such as gpg, credentials -->
   <property file="${user.home}/.gradle/gradle.properties"/>
@@ -46,8 +46,8 @@ limitations under the License.
   <!-- javac properties -->
   <property name="javac.source" value="1.6"/>
   <property name="javac.target" value="1.6"/>
-  
-   <!-- wrapper file name properties -->
+
+  <!-- wrapper file name properties -->
   <property name="unix.wrapper.file" value="antw"/>
   <property name="windows.wrapper.file" value="antw.bat"/>
   <property name="windows.wrapper.cmd" value="antw.cmd"/>
@@ -153,8 +153,8 @@ limitations under the License.
     <ivy:cachepath pathid="compile.classpath" conf="compile" />
     <ivy:cachepath pathid="release.classpath" conf="release" />
 
-    <taskdef uri="antlib:smartrics.ant.git"
-             resource="jgit-ant-lib.xml"
+    <taskdef uri="antlib:com.rimerosolutions.ant.git"
+             resource="com/rimerosolutions/ant/git/jgit-ant-lib.xml"
              classpathref="release.classpath"/>
   </target>
 
@@ -202,7 +202,7 @@ limitations under the License.
     <git:git localDirectory="${basedir}" verbose="true">
       <git:commit message="preparing release ${build.number}"/>
       <git:uptodate failOnError="true"/>
-      <git:push/>
+      <git:push username="${github.username}" password="${github.password}"/>
     </git:git>
   </target>
 
@@ -210,7 +210,7 @@ limitations under the License.
     <echo>Tagging release ${build.number}.</echo>
     <git:git localDirectory="${basedir}" verbose="true">
       <git:tag name="${build.number}"/>
-      <git:push/>
+      <git:push username="${github.username}" password="${github.password}"/>
     </git:git>
   </target>
 
