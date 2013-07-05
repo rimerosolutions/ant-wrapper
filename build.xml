@@ -87,8 +87,8 @@ limitations under the License.
       <isset property="signing.password"/>
       <isset property="signing.name"/>
       <isset property="signing.secretKeyRingFile"/>
-      <isset property="sonatypeUsername"/>
-      <isset property="sonatypePassword"/>
+      <isset property="sonatype.username"/>
+      <isset property="sonatype.password"/>
     </and>
   </condition>
 
