@@ -2,7 +2,7 @@
 
 * Summary
 
-This is an [[http://ant.apache.org][Apache Ant]] command line wrapper similar to the [[http://www.gradle.org/docs/current/userguide/gradle_wrapper.html][Gradle command line wrapper]].
+This is an [[http://ant.apache.org/][Apache Ant]] command line wrapper similar to the [[http://www.gradle.org/docs/current/userguide/gradle_wrapper.html][Gradle command line wrapper]].
 
 It provides an =antw= command wrapper to =ant= that will auto-download and build your project for a requested Apache Ant version.
 
