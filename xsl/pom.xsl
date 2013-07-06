@@ -8,6 +8,17 @@
                 version="1.0">
   <xsl:param name="version" />
 
+  <xsl:template match="/m:project/m:modelVersion">
+    <xsl:copy>
+      <xsl:apply-templates/>
+    </xsl:copy>
+    <parent>
+      <groupId>org.sonatype.oss</groupId>
+      <artifactId>oss-parent</artifactId>
+      <version>7</version>
+    </parent>
+  </xsl:template>
+
   <xsl:template match="/m:project/m:version">
     <xsl:copy>
       <xsl:value-of select="$version" />
@@ -36,6 +47,13 @@
         <id>rimerosolutions</id>
         <name>Yves Zoundi</name>
         <email>rimerosolutions@gmail.com</email>
+        <url>https://github.com/rimerosolutions</url>
+        <organization>Rimero Solutions</organization>
+        <organizationUrl>http://www.rimerosolutions.com</organizationUrl>
+        <roles>
+          <role>developer</role>
+        </roles>
+        <timezone>-5</timezone>
       </developer>
     </developers>
   </xsl:template>
@@ -45,5 +63,5 @@
       <xsl:apply-templates select="@*|node()" />
     </xsl:copy>
   </xsl:template>
-  
+
 </xsl:stylesheet>
