@@ -32,17 +32,17 @@ You can also generate the Ant wrapper for the project itself!
 Once the wrapper is installed, you can play with it, as you please:
  : ./antw -projecthelp
 
-* Installation
-
-The build process will generate the resulting jar archive in the project *dist* folder.
-
-You have 2 installation options:
-- Drop the jar at the root of your existing projects or any other given location (Ant taskdef with classpath).
-- Drop the jar in your *ANT_HOME/lib* folder (ant taskdef without any classpath setup).
-
 * Integration
 ** Using Apache Ivy (Recommended)
 If your Ant build already uses [[http://ant.apache.org/ivy/][Apache Ivy]] as dependency manager, [[https://github.com/rimerosolutions/ant-wrapper-example/][please take a look at this simple example project]].
+
+If you don't want to use Ivy,  you can following one of the 2 next approaches after copying the =ant-wrapper= jar somewhere.
+
+The build process will generate the resulting =jar= archive in the project =dist= folder.
+
+You have 2 installation options:
+- Drop the jar at the root of your existing projects or any other given location (Ant taskdef with classpath).
+- Drop the jar in your =ANT_HOME/lib= folder (ant taskdef without any classpath setup).
 
 ** Using AntLib
 It's also possible to use [[http://ant.apache.org/manual/Types/antlib.html][Antlib]] and XML namespaces to refer to the Ant wrapper custom task.
@@ -68,7 +68,7 @@ It's also possible to use [[http://ant.apache.org/manual/Types/antlib.html][Antl
  :  </target>
  : </project>
 
-** Sample build script
+** Sample build script (no Antlib)
  : <?xml version="1.0"?>
  : <project name="AntWrapperProject" default="generatewrapper">
  : <!-- The optional Ant Task also accepts a baseDistributionUrl 
