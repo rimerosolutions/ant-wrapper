@@ -4,11 +4,13 @@
 
 This is an [[http://ant.apache.org][Apache Ant]] command line wrapper similar to the [[http://www.gradle.org/docs/current/userguide/gradle_wrapper.html][Gradle command line wrapper]].
 
+It provides an =antw= command wrapper to =ant= that will auto-download and build your project for a requested Apache Ant version.
+
+This ensure that as long as your build file is good, other people will be able to build your project easily with no prior Apache Ant setup.
+
 What can you do with it?
 - You can generate an Ant wrapper for a project from a machine with an existing Ant installation.
 - You can share the project without requiring an existing Ant installation from the 'application builder'.
-
-This project is a quick rip of [[https://github.com/bdemers/maven-wrapper][maven-wrapper]] adapted for Apache Ant.
 
 The wrapper functionality is provided via a custom Apache Ant task.
 
@@ -38,28 +40,67 @@ You have 2 installation options:
 - Drop the jar at the root of your existing projects or any other given location (Ant taskdef with classpath).
 - Drop the jar in your *ANT_HOME/lib* folder (ant taskdef without any classpath setup).
 
-* Usage
-** Sample build script
- : <?xml version="1.0"?>
- : <project name="AntWrapperProject" default="generatewrapper">
- : <!-- The optional Ant Task also accepts a baseDistributionUrl 
- :      properties for the Ant zip files binaries -->
- : <!-- if you dropped the wrapper jar in ANT_HOME/lib -->
- : <taskdef name="genAntWrapper" classname="com.rimerosolutions.ant.wrapper.tasks.AntWrapperTask"/>
- : 	
- : 	<!-- if you have the wrapper jar at the root folder of your project 
- : 	<taskdef name="genAntWrapper" classname="com.rimerosolutions.ant.wrapper.tasks.AntWrapperTask">
- : 	<classpath>
- : 	    <pathelement location="ant-wrapper-0.0.1-SNAPSHOT.jar"/>
- : 	  </classpath>
- :   </taskdef>
- :   --> 
+* Integration
+** Using Apache Ivy (Recommended)
+If your Ant build already uses [[http://ant.apache.org/ivy/][Apache Ivy]] as dependency manager, [[https://github.com/rimerosolutions/ant-wrapper-example/][please take a look at this simple example project]].
+
+Inside your =ivysettings.xml=, add a reference to the Sonatype snapshot repository.
+
+ : <ivysettings>
+ :  <!-- other ivysettings contents here -->
+ :  <resolvers>
+ :    <chain name="chain">
+ :    <!-- your other repositories -->
+ :     <!-- YOU MUST HAVE SONATYPE SNAPSHOTS REPOSITORIES DECLARED TO FETCH THE WRAPPER -->
+ :      <url name="sonatype-snapshots" m2compatible="true">
+ :        <artifact pattern="https://oss.sonatype.org/content/repositories/snapshots/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"/>
+ :      </url>
+ :    </chain>
+ :  </resolvers>
+ : </ivysetting>
+
+Inside your =ivy.xml= file, add a configuration called =wrapper=.
+
+ : <configurations defaultconfmapping="default">
+ :    <conf name="default" />
+ :    <!-- ... Your other configurations here ... -->
+ :    <conf name="wrapper" visibility="private" />
+ :  </configurations>
+ :
+ :  <!-- other ivy.xml elements such as publications -->
+ :
+ :  <dependencies>
+ :    <!-- ... Your other dependencies here ... -->
+ :    <dependency org="com.rimerosolutions.ant" name="ant-wrapper" rev="0.0.1-SNAPSHOT" changing="true" conf="wrapper->default"/>
+ :    <dependency org="org.apache.ant" name="ant-launcher" rev="1.7.0" conf="wrapper->default"/>
+ :    <dependency org="org.apache.ant" name="ant" rev="1.7.0" conf="wrapper->default"/>
+ :  </dependencies>
+
+
+In your =build.xml=, add a reference to the =ant-wrapper= namespace to your =build.xml= file.
+
+ :  <project name="YOUR_PROJECT_NAME_HERE" 
+ :          xmlns:wrapper="antlib:com.rimerosolutions.ant.wrapper.tasks"
+ :          default="YOUR_DEFAULT_ANT_TARGET_HERE">
+ :  <!-- rest of your build.xml contents -->
+ :
+ :  </project>
+
+Again, in your =build.xml=, after doing an =ivy:retrieve=, cache the path to the Apache Ant Wrapper dependencies.
+
+ :  <target name="-resolve" depends="-init-ivy">
+ :    <echo>Fetching dependencies.</echo>
+ :    <ivy:retrieve  pattern="${ivy.lib.dir}/[conf]/[artifact].[ext]" sync="true" />
+ :
+ :    <! -- ADD A REFERENCE TO THE WRAPPER CLASSPATH HERE -->
+ :    <!-- store the Ant wrapper dependencies -->
+ :    <ivy:cachepath pathid="ant.wrapper.classpath" conf="wrapper" />
  : 
- : 	<target name="generatewrapper">
- :      <genAntWrapper/>
- :      <!-- <genAntWrapper baseDistributionUrl="http://archive.apache.org/dist/ant/binaries"/> -->
- :     </target>
- : </project>
+ :    <!-- Add a new task definition to make the wrapper available -->   
+ :    <taskdef uri="antlib:com.rimerosolutions.ant.wrapper.tasks"
+ :             resource="com/rimerosolutions/ant/wrapper/tasks/antlib.xml"
+ :             classpathref="ant.wrapper.classpath"/>
+ :  </target>
 
 ** Using AntLib
 It's also possible to use [[http://ant.apache.org/manual/Types/antlib.html][Antlib]] and XML namespaces to refer to the Ant wrapper custom task.
@@ -83,6 +124,28 @@ It's also possible to use [[http://ant.apache.org/manual/Types/antlib.html][Antl
  :    <wrapper:wrapper/>
  :    <!-- <wrapper:wrapper baseDistributionUrl="http://archive.apache.org/dist/ant/binaries"/> -->
  :  </target>
+ : </project>
+
+** Sample build script
+ : <?xml version="1.0"?>
+ : <project name="AntWrapperProject" default="generatewrapper">
+ : <!-- The optional Ant Task also accepts a baseDistributionUrl 
+ :      properties for the Ant zip files binaries -->
+ : <!-- if you dropped the wrapper jar in ANT_HOME/lib -->
+ : <taskdef name="genAntWrapper" classname="com.rimerosolutions.ant.wrapper.tasks.AntWrapperTask"/>
+ : 	
+ : 	<!-- if you have the wrapper jar at the root folder of your project 
+ : 	<taskdef name="genAntWrapper" classname="com.rimerosolutions.ant.wrapper.tasks.AntWrapperTask">
+ : 	<classpath>
+ : 	    <pathelement location="ant-wrapper-0.0.1-SNAPSHOT.jar"/>
+ : 	  </classpath>
+ :   </taskdef>
+ :   --> 
+ : 
+ : 	<target name="generatewrapper">
+ :      <genAntWrapper/>
+ :      <!-- <genAntWrapper baseDistributionUrl="http://archive.apache.org/dist/ant/binaries"/> -->
+ :     </target>
  : </project>
 
 ** Wrapper generation
