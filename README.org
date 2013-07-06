@@ -34,7 +34,7 @@ Once the wrapper is installed, you can play with it, as you please:
 
 * Integration
 ** Using Apache Ivy (Recommended)
-If your Ant build already uses [[http://ant.apache.org/ivy/][Apache Ivy]] as dependency manager, [[https://github.com/rimerosolutions/ant-wrapper-example/][please take a look at this simple example project]].
+If your Ant build already uses [[http://ant.apache.org/ivy/][Apache Ivy]] as dependency manager, take a look at the [[https://github.com/rimerosolutions/ant-wrapper-example/][ant-wrapper-example]] project.
 
 If you don't want to use Ivy,  you can following one of the 2 next approaches after copying the =ant-wrapper= jar somewhere.
 
