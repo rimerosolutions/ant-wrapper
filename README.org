@@ -50,7 +50,7 @@ It's also possible to use [[http://ant.apache.org/manual/Types/antlib.html][Antl
  : <?xml version="1.0"?>
  : <project name="AntWrapperProject" 
  :          xmlns:wrapper="antlib:com.rimerosolutions.ant.wrapper.tasks"
- :          default="generatewrapper">
+ :          default="wrapper">
  :  <!-- The optional Ant Task also accepts a baseDistributionUrl properties for the Ant zip files binaries -->
  :  <!-- if you dropped the wrapper jar in ANT_HOME/lib -->
  :  <taskdef uri="antlib:com.rimerosolutions.ant.wrapper.tasks"
@@ -62,7 +62,7 @@ It's also possible to use [[http://ant.apache.org/manual/Types/antlib.html][Antl
  :                   classpath="ant-wrapper-0.0.1-SNAPSHOT.jar"/>
  :  --> 
  : 
- :  <target name="generatewrapper">
+ :  <target name="wrapper">
  :    <wrapper:wrapper/>
  :    <!-- <wrapper:wrapper baseDistributionUrl="http://archive.apache.org/dist/ant/binaries"/> -->
  :  </target>
@@ -70,7 +70,7 @@ It's also possible to use [[http://ant.apache.org/manual/Types/antlib.html][Antl
 
 ** Sample build script (no Antlib)
  : <?xml version="1.0"?>
- : <project name="AntWrapperProject" default="generatewrapper">
+ : <project name="AntWrapperProject" default="wrapper">
  : <!-- The optional Ant Task also accepts a baseDistributionUrl 
  :      properties for the Ant zip files binaries -->
  : <!-- if you dropped the wrapper jar in ANT_HOME/lib -->
@@ -84,7 +84,7 @@ It's also possible to use [[http://ant.apache.org/manual/Types/antlib.html][Antl
  :   </taskdef>
  :   --> 
  : 
- : 	<target name="generatewrapper">
+ : 	<target name="wrapper">
  :      <genAntWrapper/>
  :      <!-- <genAntWrapper baseDistributionUrl="http://archive.apache.org/dist/ant/binaries"/> -->
  :     </target>
@@ -93,7 +93,7 @@ It's also possible to use [[http://ant.apache.org/manual/Types/antlib.html][Antl
 ** Wrapper generation
 
 With the above sample script, accordingly to the *taskdef* approach that you selected, run the following:
- : ant generatewrapper
+ : ant wrapper
 
 This will create 5 main artefacts at the root of your project folder :
 - *antw* : A UNIX command wrapper.
