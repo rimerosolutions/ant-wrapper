@@ -26,7 +26,7 @@ limitations under the License.
         <property file="${basedir}/properties/build.properties"/>
 
         <!-- project properties -->
-        <property name="release.properties.filename" value="release.properties"/>
+        <property name="release.properties.filename" value="${basedir}/properties/release.properties"/>
         <property file="${release.properties.filename}"/>
         <property name="build.number" value="${build.major.number}.${build.minor.number}.${build.revision.number}"/>
 
