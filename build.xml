@@ -90,7 +90,7 @@ limitations under the License.
         <condition property="ivy.home" value="${env.IVY_HOME}">
                 <isset property="env.IVY_HOME"/>
         </condition>
-        <property name="ivyxml.file" value="${basedir}/ivy/ivy.xml"/>
+        <property name="ivyxml.file" value="${basedir}/ivy.xml"/>
         <property name="ivy.home" value="${user.home}/.ant"/>
         <property name="ivy.jar.dir" value="${ivy.home}/lib"/>
         <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
@@ -528,19 +528,19 @@ limitations under the License.
         </target>
 
         <target name="maven-publish-local"
-                depends="maven-pom,-resolve,release-perform"
+                depends="maven-pom,release-perform"
                 description="Publish build artifacts to the local Maven repository">
                 <maven-publish mavenRepoId="${maven.repo.local}"/>
         </target>
 
         <target name="-maven-publish-sonatype-release"
-                depends="maven-pom,-resolve,release-perform"
+                depends="maven-pom,release-perform"
                 if="sonatype.deployment.releases.enabled">
                 <maven-publish mavenRepoId="${maven.repo.sonatype.releases}"/>
         </target>
 
         <target name="-maven-publish-sonatype-snapshots"
-                depends="maven-pom,-resolve"
+                depends="maven-pom"
                 if="sonatype.deployment.snapshots.enabled">
                 <maven-publish mavenRepoId="${maven.repo.sonatype.snapshots}"/>
         </target>
