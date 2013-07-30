@@ -44,6 +44,8 @@ You have 2 installation options:
 - Drop the jar at the root of your existing projects or any other given location (Ant taskdef with classpath).
 - Drop the jar in your =ANT_HOME/lib= folder (ant taskdef without any classpath setup).
 
+You can [[https://oss.sonatype.org/content/repositories/snapshots/com/rimerosolutions/ant/ant-wrapper/0.0.1-SNAPSHOT/ant-wrapper-0.0.1-SNAPSHOT.jar][download directly]] the wrapper jar file from Sonatype Maven repositories.
+
 ** Using AntLib
 It's also possible to use [[http://ant.apache.org/manual/Types/antlib.html][Antlib]] and XML namespaces to refer to the Ant wrapper custom task.
 
@@ -64,7 +66,10 @@ It's also possible to use [[http://ant.apache.org/manual/Types/antlib.html][Antl
  : 
  :  <target name="wrapper">
  :    <wrapper:wrapper/>
- :    <!-- <wrapper:wrapper baseDistributionUrl="http://archive.apache.org/dist/ant/binaries"/> -->
+ :    <!-- 
+ :    <wrapper:wrapper baseDistributionUrl="http://archive.apache.org/dist/ant/binaries"/>
+ :                     antVersion="1.8.0"/> 
+ :    -->
  :  </target>
  : </project>
 
@@ -86,7 +91,10 @@ It's also possible to use [[http://ant.apache.org/manual/Types/antlib.html][Antl
  : 
  : 	<target name="wrapper">
  :      <genAntWrapper/>
- :      <!-- <genAntWrapper baseDistributionUrl="http://archive.apache.org/dist/ant/binaries"/> -->
+ :      <!-- 
+ :      <genAntWrapper baseDistributionUrl="http://archive.apache.org/dist/ant/binaries"
+ :                     antVersion="1.8.0"/> 
+ :      -->
  :     </target>
  : </project>
 
@@ -105,3 +113,11 @@ This will create 5 main artefacts at the root of your project folder :
 ** Testing
 - Run your current project via the Ant wrapper instead of your local Ant installation.
 - Build your project with the Ant wrapper on a machine that doesn't have an existing Ant installation.
+
+* Task properties
+
+| name                | Description                            | Value                                                              |
+|---------------------+----------------------------------------+--------------------------------------------------------------------|
+| baseDistributionUrl | The download base distribution URL     | The default value is : http://archive.apache.org/dist/ant/binaries |
+| antVersion          | The ant version to use for the wrapper | The default value is auto-detected unless specified.               |
+
