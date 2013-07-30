@@ -21,13 +21,13 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.Properties;
 
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
+import org.apache.tools.ant.util.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -201,12 +201,7 @@ public class WrapperExecutorTest {
                 }
                 finally {
                         if (outStream != null) {
-                                try {
-                                        outStream.close();
-                                }
-                                catch (IOException ioe) {
-                                        // ignore
-                                }
+                               FileUtils.close(outStream);
                         }
                 }
         }
