@@ -30,7 +30,6 @@ import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.Resource;
 import org.apache.tools.ant.types.resources.FileResource;
-import org.apache.tools.ant.types.resources.URLResource;
 import org.apache.tools.ant.util.FileUtils;
 
 /**
@@ -40,32 +39,48 @@ import org.apache.tools.ant.util.FileUtils;
  * 
  * @author Yves Zoundi
  */
-public final class AntWrapperTask extends Task {
-        private static String antVersion;
+public class AntWrapperTask extends Task {
         static final String TASK_DESCRIPTION = "Generate Ant Command Line Wrapper";
         static final int BUFFER_SIZE = 1024;
         static final String DEFAULT_BASE_DISTRIBUTION_URL = "http://archive.apache.org/dist/ant/binaries";
-        static final String ANT_BIN_FILENAME_TEMPLATE = "apache-ant-%s-bin.zip";
         static final String ANT_VERSION_FILE_LOCATION = "/org/apache/tools/ant/version.txt";
         static final String ANT_VERSION_PROPERTY = "VERSION";
         static final String FILE_URL_SCHEME = "file";
-        static final String WRAPPER_PROPERTIES_FILE_NAME = "wrapper.properties";
-        static final String WRAPPER_ROOT_FOLDER_NAME = "wrapper";
-        static final String WRAPPER_JAR_FILE_NAME = "wrapper.jar";
         static final String ANT_WRAPPER_PROPERTIES_FILE_COMMENTS = "Ant download properties";
-        static final String DISTRIBUTION_URL_PROPERTY = "distributionUrl";
 
-        static final String LAUNCHER_WINDOWS_FILE_NAME = "antw.bat";
-        static final String LAUNCHER_WINDOWSCMD_FILE_NAME = "antw.cmd";
-        static final String LCP_WINDOWS_FILE_NAME = "lcp.bat";
-        static final String LAUNCHER_UNIX_FILE_NAME = "antw";
+        public static final String ANT_BIN_FILENAME_TEMPLATE = "apache-ant-%s-bin.zip";
+        public static final String WRAPPER_ROOT_FOLDER_NAME = "wrapper";
+        public static final String WRAPPER_PROPERTIES_FILE_NAME = "wrapper.properties";
+        public static final String WRAPPER_JAR_FILE_NAME = "wrapper.jar";
+        public static final String DISTRIBUTION_URL_PROPERTY = "distributionUrl";
+
+        public static final String LAUNCHER_WINDOWS_FILE_NAME = "antw.bat";
+        public static final String LAUNCHER_WINDOWSCMD_FILE_NAME = "antw.cmd";
+        public static final String LCP_WINDOWS_FILE_NAME = "lcp.bat";
+        public static final String LAUNCHER_UNIX_FILE_NAME = "antw";
 
         static final String RESOURCES_LOCATION = "com/rimerosolutions/ant/wrapper";
-        static final String[] LAUNCHER_RESOURCES = { LAUNCHER_WINDOWS_FILE_NAME, LAUNCHER_WINDOWSCMD_FILE_NAME, LCP_WINDOWS_FILE_NAME,
-                        LAUNCHER_UNIX_FILE_NAME };
+        static final String[] LAUNCHER_RESOURCES = { 
+                LAUNCHER_WINDOWS_FILE_NAME, 
+                LAUNCHER_WINDOWSCMD_FILE_NAME, 
+                LCP_WINDOWS_FILE_NAME,
+                LAUNCHER_UNIX_FILE_NAME
+        };
 
         /** Distribution Url optional parameter */
         private String baseDistributionUrl;
+
+        /** Optional Ant version to use for the wrapper */
+        private String antVersion;
+
+        /**
+         * Sets the Ant version to use
+         * 
+         * @param antVersion The Ant version to use (Default auto-detected)
+         */
+        public void setAntVersion(String antVersion) {
+                this.antVersion = antVersion;
+        }
 
         /** Sets the root URL containing the Apache Ant binaries in zip format */
         public void setBaseDistributionUrl(String baseDistributionUrl) {
@@ -93,7 +108,7 @@ public final class AntWrapperTask extends Task {
                         File launcherFile = new File(getProject().getBaseDir(), launcherFileName);
 
                         try {
-                                copyResourceToFile(new URLResource(launcherUrl), launcherFile);
+                                copyResourceToFile(new FileResource(new File(launcherUrl.getFile())), launcherFile);
                         } catch (Exception e) {
                                 throw new BuildException(e);
                         }
@@ -124,7 +139,7 @@ public final class AntWrapperTask extends Task {
                         FileUtils.close(propertiesOutputStream);
                 }
         }
-        
+
         private void ensureWrapperSupportDirExists(File wrapperSupportDir) {
                 if (!wrapperSupportDir.exists()) {
                         wrapperSupportDir.mkdirs();
@@ -146,10 +161,14 @@ public final class AntWrapperTask extends Task {
 
                 binaryFileLocation.append(ANT_BIN_FILENAME_TEMPLATE);
 
-                return String.format(binaryFileLocation.toString(), getAntVersion());
+                if (antVersion == null || antVersion.trim().length() == 0) {
+                        antVersion = getAntRuntimeVersion();
+                }
+
+                return String.format(binaryFileLocation.toString(), antVersion);
         }
 
-        private static File findWrapperJarFile() {
+        protected File findWrapperJarFile() {
                 URI location;
 
                 try {
@@ -165,34 +184,32 @@ public final class AntWrapperTask extends Task {
                 return new File(location.getPath());
         }
 
-        private static void copyResourceToFile(Resource r, File filePath) {
+        private static void copyResourceToFile(Resource r, File f) {
                 Copy copy = new Copy();
                 copy.setProject(new Project());
                 copy.add(r);
-                copy.setTofile(filePath);
+                copy.setTofile(f);
                 copy.execute();
         }
 
-        private static synchronized String getAntVersion() throws BuildException {
-                if (antVersion == null) {
-                        InputStream in = null;
+        private static String getAntRuntimeVersion() throws BuildException {
+                InputStream in = null;
 
-                        try {
-                                Properties props = new Properties();
-                                in = AntWrapperTask.class.getResourceAsStream(ANT_VERSION_FILE_LOCATION);
-                                props.load(in);
-                                antVersion = props.getProperty(ANT_VERSION_PROPERTY);
-                        } catch (IOException ioe) {
-                                throw new BuildException("Could not load the version information:" + ioe.getMessage());
-                        } catch (NullPointerException npe) {
-                                throw new BuildException("Could not load the Apache Ant version information.");
-                        } finally {
-                                if (in != null) {
-                                        FileUtils.close(in);
-                                }
+                try {
+                        Properties props = new Properties();
+                        in = AntWrapperTask.class.getResourceAsStream(ANT_VERSION_FILE_LOCATION);
+                        props.load(in);
+                        
+                        return props.getProperty(ANT_VERSION_PROPERTY);
+                } catch (IOException ioe) {
+                        throw new BuildException("Could not load the version information:" + ioe.getMessage());
+                } catch (NullPointerException npe) {
+                        throw new BuildException("Could not load the Apache Ant version information.");
+                } finally {
+                        if (in != null) {
+                                FileUtils.close(in);
                         }
                 }
 
-                return antVersion;
         }
 }
