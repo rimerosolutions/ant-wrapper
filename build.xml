@@ -334,6 +334,10 @@ limitations under the License.
                                 <path location="${classes.dir}"/>
                         </classpath>
                 </javac>
+
+                <copy todir="${test.classes.dir}">
+                        <fileset dir="${test.resources.dir}"/>
+                </copy>
         </target>
 
         <target name="-instrument-tests" depends="compile-tests">
@@ -357,7 +361,7 @@ limitations under the License.
                 </cobertura:instrument>
         </target>
 
-        <target name="tests" depends="-instrument-tests" >
+        <target name="tests" depends="-instrument-tests" description="Run unit tests">
                 <echo>Running junit tests.</echo>
 
                 <junit fork="true"

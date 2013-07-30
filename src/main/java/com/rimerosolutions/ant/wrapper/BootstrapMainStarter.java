@@ -23,12 +23,22 @@ import java.util.List;
 
 /**
  * @author Hans Dockter
+ * @author Yves Zoundi
  */
 public class BootstrapMainStarter {
+        private static final String JAVA_HOME_VARIABLE_NAME = "JAVA_HOME";
+        private static final String LIB_FOLDER_NAME = "lib";
+        private static final String JAR_FILE_EXTENSION = ".jar";
+        private static final String MAIN_METHOD_NAME = "main";
+        private static final String ANT_MAIN_CLASSNAME = "org.apache.tools.ant.Main";
+        private static final String TOOLS_JAR_PATH_GENERAL = "lib/tools.jar";
+        private static final String TOOLS_JAR_PATH_OSX = "lib/classes.jar";
+
         public void start(String[] args, File antHome) throws Exception {
                 File[] antJars = findBootstrapJars(antHome);
 
                 URL[] jarUrls = new URL[antJars.length];
+                
                 for (int i = 0; i < antJars.length; i++) {
                         jarUrls[i] = antJars[i].toURI().toURL();
                 }
@@ -36,24 +46,24 @@ public class BootstrapMainStarter {
                 URLClassLoader contextClassLoader = new URLClassLoader(jarUrls, ClassLoader.getSystemClassLoader().getParent());
                 Thread.currentThread().setContextClassLoader(contextClassLoader);
 
-                Class<?> mainClass = contextClassLoader.loadClass("org.apache.tools.ant.Main");
-                mainClass.getMethod("main", String[].class).invoke(null, new Object[] { args });
+                Class<?> mainClass = contextClassLoader.loadClass(ANT_MAIN_CLASSNAME);
+                mainClass.getMethod(MAIN_METHOD_NAME, String[].class).invoke(null, new Object[] { args });
         }
 
         private File[] findBootstrapJars(File antHome) {
                 List<File> bootstrapJars = new ArrayList<File>();
 
-                for (File file : new File(antHome, "lib").listFiles()) {
-                        if (file.getName().endsWith(".jar")) {
+                for (File file : new File(antHome, LIB_FOLDER_NAME).listFiles()) {
+                        if (file.getName().endsWith(JAR_FILE_EXTENSION)) {
                                 bootstrapJars.add(file);
                         }
                 }
 
-                String javaHome = System.getenv("JAVA_HOME");
+                String javaHome = System.getenv(JAVA_HOME_VARIABLE_NAME);
                 
                 if (javaHome != null) {
-                        File toolsJar = new File(javaHome, "lib/tools.jar");
-                        File toolsJarOsx = new File(javaHome, "lib/classes.jar");
+                        File toolsJar = new File(javaHome, TOOLS_JAR_PATH_GENERAL);
+                        File toolsJarOsx = new File(javaHome, TOOLS_JAR_PATH_OSX);
                         if (toolsJar.exists()) {
                                 bootstrapJars.add(toolsJar);
                         }

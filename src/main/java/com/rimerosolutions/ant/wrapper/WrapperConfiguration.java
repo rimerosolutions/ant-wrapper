@@ -17,93 +17,71 @@ package com.rimerosolutions.ant.wrapper;
 
 import java.net.URI;
 
-public class WrapperConfiguration
-{
-    public static final String ALWAYS_UNPACK_ENV = "MAVEN_WRAPPER_ALWAYS_UNPACK";
+public class WrapperConfiguration {
 
-    public static final String ALWAYS_DOWNLOAD_ENV = "MAVEN_WRAPPER_ALWAYS_DOWNLOAD";
+        public static final String ALWAYS_UNPACK_ENV = "MAVEN_WRAPPER_ALWAYS_UNPACK";
+        public static final String ALWAYS_DOWNLOAD_ENV = "MAVEN_WRAPPER_ALWAYS_DOWNLOAD";
+        private boolean alwaysUnpack = Boolean.parseBoolean( System.getenv( ALWAYS_UNPACK_ENV ) );
+        private boolean alwaysDownload = Boolean.parseBoolean( System.getenv( ALWAYS_DOWNLOAD_ENV ) );
+        private URI distribution;
+        private String distributionBase = PathAssembler.ANT_USER_HOME_STRING;
+        private String distributionPath = Installer.DEFAULT_DISTRIBUTION_PATH;
+        private String zipBase = PathAssembler.ANT_USER_HOME_STRING;
+        private String zipPath = Installer.DEFAULT_DISTRIBUTION_PATH;
 
-    private boolean alwaysUnpack = Boolean.parseBoolean( System.getenv( ALWAYS_UNPACK_ENV ) );
+        public boolean isAlwaysDownload() {
+                return alwaysDownload;
+        }
 
-    private boolean alwaysDownload = Boolean.parseBoolean( System.getenv( ALWAYS_DOWNLOAD_ENV ) );
+        public void setAlwaysDownload( boolean alwaysDownload ) {
+                this.alwaysDownload = alwaysDownload;
+        }
 
-    private URI distribution;
+        public boolean isAlwaysUnpack() {
+                return alwaysUnpack;
+        }
 
-    private String distributionBase = PathAssembler.ANT_USER_HOME_STRING;
+        public void setAlwaysUnpack( boolean alwaysUnpack ) {
+                this.alwaysUnpack = alwaysUnpack;
+        }
 
-    private String distributionPath = Installer.DEFAULT_DISTRIBUTION_PATH;
+        public URI getDistribution() {
+                return distribution;
+        }
 
-    private String zipBase = PathAssembler.ANT_USER_HOME_STRING;
+        public void setDistribution( URI distribution ) {
+                this.distribution = distribution;
+        }
 
-    private String zipPath = Installer.DEFAULT_DISTRIBUTION_PATH;
+        public String getDistributionBase() {
+                return distributionBase;
+        }
 
-    public boolean isAlwaysDownload()
-    {
-        return alwaysDownload;
-    }
+        public void setDistributionBase( String distributionBase ) {
+                this.distributionBase = distributionBase;
+        }
 
-    public void setAlwaysDownload( boolean alwaysDownload )
-    {
-        this.alwaysDownload = alwaysDownload;
-    }
+        public String getDistributionPath() {
+                return distributionPath;
+        }
 
-    public boolean isAlwaysUnpack()
-    {
-        return alwaysUnpack;
-    }
+        public void setDistributionPath( String distributionPath ) {
+                this.distributionPath = distributionPath;
+        }
 
-    public void setAlwaysUnpack( boolean alwaysUnpack )
-    {
-        this.alwaysUnpack = alwaysUnpack;
-    }
+        public String getZipBase() {
+                return zipBase;
+        }
 
-    public URI getDistribution()
-    {
-        return distribution;
-    }
+        public void setZipBase( String zipBase ) {
+                this.zipBase = zipBase;
+        }
 
-    public void setDistribution( URI distribution )
-    {
-        this.distribution = distribution;
-    }
+        public String getZipPath() {
+                return zipPath;
+        }
 
-    public String getDistributionBase()
-    {
-        return distributionBase;
-    }
-
-    public void setDistributionBase( String distributionBase )
-    {
-        this.distributionBase = distributionBase;
-    }
-
-    public String getDistributionPath()
-    {
-        return distributionPath;
-    }
-
-    public void setDistributionPath( String distributionPath )
-    {
-        this.distributionPath = distributionPath;
-    }
-
-    public String getZipBase()
-    {
-        return zipBase;
-    }
-
-    public void setZipBase( String zipBase )
-    {
-        this.zipBase = zipBase;
-    }
-
-    public String getZipPath()
-    {
-        return zipPath;
-    }
-
-    public void setZipPath( String zipPath )
-    {
-        this.zipPath = zipPath;
-    }
+        public void setZipPath( String zipPath ) {
+                this.zipPath = zipPath;
+        }
 }

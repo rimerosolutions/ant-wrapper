@@ -16,26 +16,28 @@
 package com.rimerosolutions.ant.wrapper.tasks;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
+import java.net.URL;
 import java.util.Properties;
 
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.taskdefs.Copy;
+import org.apache.tools.ant.types.Resource;
+import org.apache.tools.ant.types.resources.FileResource;
+import org.apache.tools.ant.types.resources.URLResource;
+import org.apache.tools.ant.util.FileUtils;
 
 /**
  * Ant wrapper task.
- *
+ * 
  * <strong>setDescription is ignored.</strong>
- *
+ * 
  * @author Yves Zoundi
  */
 public final class AntWrapperTask extends Task {
@@ -59,12 +61,8 @@ public final class AntWrapperTask extends Task {
         static final String LAUNCHER_UNIX_FILE_NAME = "antw";
 
         static final String RESOURCES_LOCATION = "com/rimerosolutions/ant/wrapper";
-        static final String[] LAUNCHER_RESOURCES = {
-                LAUNCHER_WINDOWS_FILE_NAME,
-                LAUNCHER_WINDOWSCMD_FILE_NAME,
-                LCP_WINDOWS_FILE_NAME,
-                LAUNCHER_UNIX_FILE_NAME
-        };
+        static final String[] LAUNCHER_RESOURCES = { LAUNCHER_WINDOWS_FILE_NAME, LAUNCHER_WINDOWSCMD_FILE_NAME, LCP_WINDOWS_FILE_NAME,
+                        LAUNCHER_UNIX_FILE_NAME };
 
         /** Distribution Url optional parameter */
         private String baseDistributionUrl;
@@ -91,13 +89,12 @@ public final class AntWrapperTask extends Task {
                 final ClassLoader classLoader = getClass().getClassLoader();
 
                 for (String launcherFileName : LAUNCHER_RESOURCES) {
-                        InputStream launcherStream = classLoader.getResourceAsStream(RESOURCES_LOCATION + "/" + launcherFileName);
+                        URL launcherUrl = classLoader.getResource(RESOURCES_LOCATION + "/" + launcherFileName);
                         File launcherFile = new File(getProject().getBaseDir(), launcherFileName);
 
                         try {
-                                writeToFile(launcherStream, launcherFile);
-                        }
-                        catch (Exception e) {
+                                copyResourceToFile(new URLResource(launcherUrl), launcherFile);
+                        } catch (Exception e) {
                                 throw new BuildException(e);
                         }
 
@@ -108,11 +105,33 @@ public final class AntWrapperTask extends Task {
         }
 
         private void writeWrapperPropertiesFile() {
-                File wrapperDestFolder = new File(getProject().getBaseDir(), WRAPPER_ROOT_FOLDER_NAME);
-                wrapperDestFolder.mkdirs();
+                File wrapperSupportDir = new File(getProject().getBaseDir(), WRAPPER_ROOT_FOLDER_NAME);
+                ensureWrapperSupportDirExists(wrapperSupportDir);
 
-                Properties props = new Properties();
+                copyResourceToFile(new FileResource(findWrapperJarFile()), new File(wrapperSupportDir, WRAPPER_JAR_FILE_NAME));
 
+                FileOutputStream propertiesOutputStream = null;
+
+                try {
+                        File file = new File(wrapperSupportDir, WRAPPER_PROPERTIES_FILE_NAME);
+                        Properties props = new Properties();
+                        props.put(DISTRIBUTION_URL_PROPERTY, buildDistributionUrl());
+                        propertiesOutputStream = new FileOutputStream(file);
+                        props.store(propertiesOutputStream, ANT_WRAPPER_PROPERTIES_FILE_COMMENTS);
+                } catch (IOException ioe) {
+                        throw new BuildException("Unable to store wrapper properties", ioe);
+                } finally {
+                        FileUtils.close(propertiesOutputStream);
+                }
+        }
+        
+        private void ensureWrapperSupportDirExists(File wrapperSupportDir) {
+                if (!wrapperSupportDir.exists()) {
+                        wrapperSupportDir.mkdirs();
+                }
+        }
+
+        private String buildDistributionUrl() {
                 StringBuilder binaryFileLocation = new StringBuilder(248);
 
                 if (baseDistributionUrl == null) {
@@ -127,48 +146,15 @@ public final class AntWrapperTask extends Task {
 
                 binaryFileLocation.append(ANT_BIN_FILENAME_TEMPLATE);
 
-                props.put(DISTRIBUTION_URL_PROPERTY, String.format(binaryFileLocation.toString(), getAntVersion()));
-
-                File file = new File(wrapperDestFolder, WRAPPER_PROPERTIES_FILE_NAME);
-                FileOutputStream fileOut = null;
-                InputStream is = null;
-
-                try {
-                        is = new FileInputStream(wrapperJar());
-                        writeToFile(is, new File(wrapperDestFolder, WRAPPER_JAR_FILE_NAME));
-                        fileOut = new FileOutputStream(file);
-                        props.store(fileOut, ANT_WRAPPER_PROPERTIES_FILE_COMMENTS);
-                }
-                catch (IOException ioe) {
-                        throw new BuildException("Unable to store wrapper properties", ioe);
-                }
-                finally {
-                        if (fileOut != null) {
-                                try {
-                                        fileOut.close();
-                                }
-                                catch (IOException ioe) {
-                                        throw new BuildException(ioe);
-                                }
-                        }
-                        if (is != null) {
-                                try {
-                                        fileOut.close();
-                                }
-                                catch (IOException ioe) {
-                                        throw new BuildException(ioe);
-                                }
-                        }
-                }
+                return String.format(binaryFileLocation.toString(), getAntVersion());
         }
 
-        private static File wrapperJar() {
+        private static File findWrapperJarFile() {
                 URI location;
 
                 try {
                         location = AntWrapperTask.class.getProtectionDomain().getCodeSource().getLocation().toURI();
-                }
-                catch (URISyntaxException e) {
+                } catch (URISyntaxException e) {
                         throw new BuildException(e);
                 }
 
@@ -179,40 +165,12 @@ public final class AntWrapperTask extends Task {
                 return new File(location.getPath());
         }
 
-        private static void writeToFile(InputStream stream, File filePath) throws IOException {
-                FileChannel outChannel = null;
-                ReadableByteChannel inChannel = null;
-                FileOutputStream fos = null;
-
-                try {
-                        fos = new FileOutputStream(filePath);
-                        outChannel = fos.getChannel();
-                        inChannel = Channels.newChannel(stream);
-                        ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
-
-                        while (inChannel.read(buffer) >= 0 || buffer.position() > 0) {
-                                buffer.flip();
-                                outChannel.write(buffer);
-                                buffer.clear();
-                        }
-                }
-                finally {
-                        if (inChannel != null) {
-                                inChannel.close();
-                        }
-
-                        if (outChannel != null) {
-                                outChannel.close();
-                        }
-
-                        if (fos != null) {
-                                fos.close();
-                        }
-
-                        if (stream != null) {
-                                stream.close();
-                        }
-                }
+        private static void copyResourceToFile(Resource r, File filePath) {
+                Copy copy = new Copy();
+                copy.setProject(new Project());
+                copy.add(r);
+                copy.setTofile(filePath);
+                copy.execute();
         }
 
         private static synchronized String getAntVersion() throws BuildException {
@@ -224,21 +182,13 @@ public final class AntWrapperTask extends Task {
                                 in = AntWrapperTask.class.getResourceAsStream(ANT_VERSION_FILE_LOCATION);
                                 props.load(in);
                                 antVersion = props.getProperty(ANT_VERSION_PROPERTY);
-                        }
-                        catch (IOException ioe) {
+                        } catch (IOException ioe) {
                                 throw new BuildException("Could not load the version information:" + ioe.getMessage());
-                        }
-                        catch (NullPointerException npe) {
+                        } catch (NullPointerException npe) {
                                 throw new BuildException("Could not load the Apache Ant version information.");
-                        }
-                        finally {
+                        } finally {
                                 if (in != null) {
-                                        try {
-                                                in.close();
-                                        }
-                                        catch (IOException ioe) {
-                                                throw new BuildException("Unable to close version info stream", ioe);
-                                        }
+                                        FileUtils.close(in);
                                 }
                         }
                 }

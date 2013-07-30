@@ -25,153 +25,120 @@ import java.util.Properties;
 
 /**
  * @author Hans Dockter
+ * @author Yves Zoundi
  */
-public class WrapperExecutor
-{
-    public static final String DISTRIBUTION_URL_PROPERTY = "distributionUrl";
+public class WrapperExecutor {
+        public static final String WRAPPER_PROPERTIES_PATH = "wrapper/wrapper.properties";
+        public static final String DISTRIBUTION_URL_PROPERTY = "distributionUrl";
+        public static final String DISTRIBUTION_BASE_PROPERTY = "distributionBase";
+        public static final String ZIP_STORE_BASE_PROPERTY = "zipStoreBase";
+        public static final String DISTRIBUTION_PATH_PROPERTY = "distributionPath";
+        public static final String ZIP_STORE_PATH_PROPERTY = "zipStorePath";
 
-    public static final String DISTRIBUTION_BASE_PROPERTY = "distributionBase";
+        private final Properties properties;
+        private final File propertiesFile;
+        private final Appendable warningOutput;
+        private final WrapperConfiguration config = new WrapperConfiguration();
 
-    public static final String ZIP_STORE_BASE_PROPERTY = "zipStoreBase";
-
-    public static final String DISTRIBUTION_PATH_PROPERTY = "distributionPath";
-
-    public static final String ZIP_STORE_PATH_PROPERTY = "zipStorePath";
-
-    private final Properties properties;
-
-    private final File propertiesFile;
-
-    private final Appendable warningOutput;
-
-    private final WrapperConfiguration config = new WrapperConfiguration();
-
-    public static WrapperExecutor forProjectDirectory( File projectDir, Appendable warningOutput )
-    {
-        return new WrapperExecutor( new File( projectDir, "wrapper/wrapper.properties" ), new Properties(),
-                                    warningOutput );
-    }
-
-    public static WrapperExecutor forWrapperPropertiesFile( File propertiesFile, Appendable warningOutput )
-    {
-        if ( !propertiesFile.exists() )
-        {
-            throw new RuntimeException( String.format( "Wrapper properties file '%s' does not exist.", propertiesFile ) );
-        }
-        return new WrapperExecutor( propertiesFile, new Properties(), warningOutput );
-    }
-
-    WrapperExecutor( File propertiesFile, Properties properties, Appendable warningOutput )
-    {
-        this.properties = properties;
-        this.propertiesFile = propertiesFile;
-        this.warningOutput = warningOutput;
-        if ( propertiesFile.exists() )
-        {
-            try
-            {
-                loadProperties( propertiesFile, properties );
-                config.setDistribution( prepareDistributionUri() );
-                config.setDistributionBase( getProperty( DISTRIBUTION_BASE_PROPERTY, config.getDistributionBase() ) );
-                config.setDistributionPath( getProperty( DISTRIBUTION_PATH_PROPERTY, config.getDistributionPath() ) );
-                config.setZipBase( getProperty( ZIP_STORE_BASE_PROPERTY, config.getZipBase() ) );
-                config.setZipPath( getProperty( ZIP_STORE_PATH_PROPERTY, config.getZipPath() ) );
-            }
-            catch ( Exception e )
-            {
-                throw new RuntimeException( String.format( "Could not load wrapper properties from '%s'.",
-                                                           propertiesFile ), e );
-            }
-        }
-    }
-
-    private URI prepareDistributionUri()
-        throws URISyntaxException
-    {
-        URI source = readDistroUrl();
-        if ( source.getScheme() == null )
-        {
-            // no scheme means someone passed a relative url. In our context only file relative urls make sense.
-            return new File( propertiesFile.getParentFile(), source.getSchemeSpecificPart() ).toURI();
-        }
-        else
-        {
-            return source;
-        }
-    }
-
-    private URI readDistroUrl()
-        throws URISyntaxException
-    {
-        if ( properties.getProperty( DISTRIBUTION_URL_PROPERTY ) != null )
-        {
-            return new URI( getProperty( DISTRIBUTION_URL_PROPERTY ) );
+        public static WrapperExecutor forProjectDirectory(File projectDir, Appendable warningOutput) {
+                return new WrapperExecutor(new File(projectDir, WRAPPER_PROPERTIES_PATH), new Properties(), warningOutput);
         }
 
-        reportMissingProperty( DISTRIBUTION_URL_PROPERTY );
-        return null; // previous line will fail
-    }
-
-    private static void loadProperties( File propertiesFile, Properties properties )
-        throws IOException
-    {
-        InputStream inStream = new FileInputStream( propertiesFile );
-        try
-        {
-            properties.load( inStream );
+        public static WrapperExecutor forWrapperPropertiesFile(File propertiesFile, Appendable warningOutput) {
+                if (!propertiesFile.exists()) {
+                        throw new RuntimeException(String.format("Wrapper properties file '%s' does not exist.", propertiesFile));
+                }
+                return new WrapperExecutor(propertiesFile, new Properties(), warningOutput);
         }
-        finally
-        {
-            inStream.close();
+
+        WrapperExecutor(File propertiesFile, Properties properties, Appendable warningOutput) {
+                this.properties = properties;
+                this.propertiesFile = propertiesFile;
+                this.warningOutput = warningOutput;
+                if (propertiesFile.exists()) {
+                        try {
+                                loadProperties(propertiesFile, properties);
+                                config.setDistribution(prepareDistributionUri());
+                                config.setDistributionBase(getProperty(DISTRIBUTION_BASE_PROPERTY, config.getDistributionBase()));
+                                config.setDistributionPath(getProperty(DISTRIBUTION_PATH_PROPERTY, config.getDistributionPath()));
+                                config.setZipBase(getProperty(ZIP_STORE_BASE_PROPERTY, config.getZipBase()));
+                                config.setZipPath(getProperty(ZIP_STORE_PATH_PROPERTY, config.getZipPath()));
+                        } catch (Exception e) {
+                                throw new RuntimeException(String.format("Could not load wrapper properties from '%s'.", propertiesFile), e);
+                        }
+                }
         }
-    }
 
-    /**
-     * Returns the distribution which this wrapper will use. Returns null if no wrapper meta-data was found in the
-     * specified project directory.
-     */
-    public URI getDistribution()
-    {
-        return config.getDistribution();
-    }
-
-    /**
-     * Returns the configuration for this wrapper.
-     */
-    public WrapperConfiguration getConfiguration()
-    {
-        return config;
-    }
-
-    public void execute( String[] args, Installer install, BootstrapMainStarter bootstrapMainStarter )
-        throws Exception
-    {
-        File antHome = install.createDist( config );
-        bootstrapMainStarter.start( args, antHome );
-    }
-
-    private String getProperty( String propertyName )
-    {
-        return getProperty( propertyName, null );
-    }
-
-    private String getProperty( String propertyName, String defaultValue )
-    {
-        String value = properties.getProperty( propertyName );
-        if ( value != null )
-        {
-            return value;
+        private URI prepareDistributionUri() throws URISyntaxException {
+                URI source = readDistroUrl();
+                if (source.getScheme() == null) {
+                        // no scheme means someone passed a relative url. In our
+                        // context only file relative urls make sense.
+                        return new File(propertiesFile.getParentFile(), source.getSchemeSpecificPart()).toURI();
+                } else {
+                        return source;
+                }
         }
-        if ( defaultValue != null )
-        {
-            return defaultValue;
-        }
-        return reportMissingProperty( propertyName );
-    }
 
-    private String reportMissingProperty( String propertyName )
-    {
-        throw new RuntimeException( String.format( "No value with key '%s' specified in wrapper properties file '%s'.",
-                                                   propertyName, propertiesFile ) );
-    }
+        private URI readDistroUrl() throws URISyntaxException {
+                if (properties.getProperty(DISTRIBUTION_URL_PROPERTY) != null) {
+                        return new URI(getProperty(DISTRIBUTION_URL_PROPERTY));
+                }
+
+                reportMissingProperty(DISTRIBUTION_URL_PROPERTY);
+                return null; // previous line will fail
+        }
+
+        private static void loadProperties(File propertiesFile, Properties properties) throws IOException {
+                InputStream in = null;
+
+                try {
+                        in = new FileInputStream(propertiesFile);
+                        properties.load(in);
+                } finally {
+                        if (in != null) {
+                                in.close();
+                        }
+                }
+        }
+
+        /**
+         * Returns the distribution which this wrapper will use. Returns null if
+         * no wrapper meta-data was found in the specified project directory.
+         */
+        public URI getDistribution() {
+                return config.getDistribution();
+        }
+
+        /**
+         * Returns the configuration for this wrapper.
+         */
+        public WrapperConfiguration getConfiguration() {
+                return config;
+        }
+
+        public void execute(String[] args, Installer install, BootstrapMainStarter bootstrapMainStarter) throws Exception {
+                File antHome = install.createDist(config);
+                bootstrapMainStarter.start(args, antHome);
+        }
+
+        private String getProperty(String propertyName) {
+                return getProperty(propertyName, null);
+        }
+
+        private String getProperty(String propertyName, String defaultValue) {
+                String value = properties.getProperty(propertyName);
+                if (value != null) {
+                        return value;
+                }
+                if (defaultValue != null) {
+                        return defaultValue;
+                }
+                return reportMissingProperty(propertyName);
+        }
+
+        private String reportMissingProperty(String propertyName) {
+                throw new RuntimeException(String.format("No value with key '%s' specified in wrapper properties file '%s'.", propertyName,
+                                propertiesFile));
+        }
 }
