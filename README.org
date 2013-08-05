@@ -1,6 +1,6 @@
 #+TITLE: Ant Command Line Wrapper
 
-[[https://travis-ci.org/rimerosolutions/ant-wrapper][Travis.ci Build status]] [[https://travis-ci.org/rimerosolutions/ant-wrapper.png]]
+[[https://travis-ci.org/rimerosolutions/ant-wrapper][travis.ci build status page]] [[https://travis-ci.org/rimerosolutions/ant-wrapper.png]]
 
 * Summary
 
