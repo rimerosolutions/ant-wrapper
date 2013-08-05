@@ -1,5 +1,9 @@
 #+TITLE: Ant Command Line Wrapper
 
+#+ATTR_HTML: alt="Travis CI Build Status" title="Build status" align="left"
+[[https://travis-ci.org/rimerosolutions/ant-wrapper.png]]
+#+HTML: <br clear="all"><br>
+
 * Summary
 
 This is an [[http://ant.apache.org/][Apache Ant]] command line wrapper similar to the [[http://www.gradle.org/docs/current/userguide/gradle_wrapper.html][Gradle command line wrapper]].
