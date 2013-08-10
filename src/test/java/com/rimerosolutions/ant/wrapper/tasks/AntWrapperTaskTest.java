@@ -39,9 +39,9 @@ import com.rimerosolutions.ant.wrapper.tasks.AntWrapperTask;
 public class AntWrapperTaskTest {
         
         private File testDir = new File("target/testData/wrapper-" + System.currentTimeMillis());
-        private final String dummyAntVersion = "0.0.1";
-        private final String dummyDistributionUrl = "http://serverbase";
-        private final String dummyWrapperJarFilename = "ant-wrapper.jar";
+        private final String antVersion = "0.0.1";
+        private final String distributionUrl = "http://serverbase";
+        private final String wrapperJarFilename = "ant-wrapper.jar";
 
         private void executeWrapperTask() {
                 Project project = new Project();
@@ -49,12 +49,13 @@ public class AntWrapperTaskTest {
                 
                 AntWrapperTask task = new AntWrapperTask() {
                         protected File findWrapperJarFile() {
-                                return new File(testDir, dummyWrapperJarFilename);
+                                return new File(testDir, wrapperJarFilename);
                         }
                 };
+                
                 task.setProject(project);
-                task.setAntVersion(dummyAntVersion);
-                task.setBaseDistributionUrl(dummyDistributionUrl);
+                task.setAntVersion(antVersion);
+                task.setBaseDistributionUrl(distributionUrl);
                 task.execute();
         }
         
@@ -72,22 +73,22 @@ public class AntWrapperTaskTest {
                         if (is != null) {
                                 FileUtils.close(is);
                         }
-                }
-                
+                }                
         }
         
         private String getExpectedDistributionUrl() {
-                StringBuilder sb =  new StringBuilder();
-                sb.append(dummyDistributionUrl).append('/');
+                StringBuilder sb =  new StringBuilder(256);
+                
+                sb.append(distributionUrl).append('/');
                 sb.append(AntWrapperTask.ANT_BIN_FILENAME_TEMPLATE);
                 
-                return String.format(sb.toString(), dummyAntVersion);
+                return String.format(sb.toString(), antVersion);
         }
         
         @Before
         public void initializeWrapperDir() {
                testDir.mkdirs();
-               IOUtils.touchFile(new File(testDir, dummyWrapperJarFilename));
+               IOUtils.touchFile(new File(testDir, wrapperJarFilename));
         }
         
         @After
@@ -101,17 +102,17 @@ public class AntWrapperTaskTest {
                 
                 File wrapperSupportDir = new File(testDir, AntWrapperTask.WRAPPER_ROOT_FOLDER_NAME);
                 File wrapperPropertiesFile = new File(wrapperSupportDir, AntWrapperTask.WRAPPER_PROPERTIES_FILE_NAME);
-                
-                assertTrue(wrapperSupportDir.exists());
+                File wrapperJarFile = new File(wrapperSupportDir, AntWrapperTask.WRAPPER_JAR_FILE_NAME);
+                                
                 assertTrue(new File(testDir, AntWrapperTask.LAUNCHER_WINDOWS_FILE_NAME).exists());
                 assertTrue(new File(testDir, AntWrapperTask.LAUNCHER_WINDOWSCMD_FILE_NAME).exists());
                 assertTrue(new File(testDir, AntWrapperTask.LCP_WINDOWS_FILE_NAME).exists());
                 assertTrue(new File(testDir, AntWrapperTask.LAUNCHER_UNIX_FILE_NAME).exists());
-                assertTrue(wrapperPropertiesFile.exists());
-                assertTrue(new File(wrapperSupportDir, AntWrapperTask.WRAPPER_JAR_FILE_NAME).exists());
                 
-                assertEquals(getExpectedDistributionUrl(), readDistributionUrlFromWrapperProperties(wrapperPropertiesFile));
+                assertTrue(wrapperSupportDir.exists());
+                assertTrue(wrapperPropertiesFile.exists());                
+                assertTrue(wrapperJarFile.exists());
                 
-                
+                assertEquals(getExpectedDistributionUrl(), readDistributionUrlFromWrapperProperties(wrapperPropertiesFile));                
         }
 }
