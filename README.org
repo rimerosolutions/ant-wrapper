@@ -47,7 +47,10 @@ You have 2 installation options:
 - Drop the jar at the root of your existing projects or any other given location (Ant taskdef with classpath).
 - Drop the jar in your =ANT_HOME/lib= folder (ant taskdef without any classpath setup).
 
-You can [[https://oss.sonatype.org/content/repositories/snapshots/com/rimerosolutions/ant/ant-wrapper/0.0.1-SNAPSHOT/ant-wrapper-0.0.1  .jar][download directly]] the wrapper jar file from Sonatype Maven repositories.
+Download the Ant task Jar file from Maven central using the link below.
+
+#+ATTR_HTML: title="Ant Wrapper Jar File"
+[[http://repo1.maven.org/maven2/com/rimerosolutions/ant/ant-wrapper/0.0.1/ant-wrapper-0.0.1.jar][file:./download.png]]
 
 ** Using AntLib
 It's also possible to use [[http://ant.apache.org/manual/Types/antlib.html][Antlib]] and XML namespaces to refer to the Ant wrapper custom task.
