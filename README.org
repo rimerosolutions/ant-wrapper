@@ -1,8 +1,7 @@
 #+TITLE: Ant Command Line Wrapper
 
-[[https://travis-ci.org/rimerosolutions/ant-wrapper][Build status page]]
-#+ATTR_HTML: style="float:left;"
-[[https://travis-ci.org/rimerosolutions/ant-wrapper.png]]
+#+ATTR_HTML: title="travis-ci status page"
+[[https://travis-ci.org/rimerosolutions/ant-wrapper/][file:https://travis-ci.org/rimerosolutions/ant-wrapper.png]]
 
 * Summary
 
@@ -48,7 +47,7 @@ You have 2 installation options:
 - Drop the jar at the root of your existing projects or any other given location (Ant taskdef with classpath).
 - Drop the jar in your =ANT_HOME/lib= folder (ant taskdef without any classpath setup).
 
-You can [[https://oss.sonatype.org/content/repositories/snapshots/com/rimerosolutions/ant/ant-wrapper/0.0.1-SNAPSHOT/ant-wrapper-0.0.1-SNAPSHOT.jar][download directly]] the wrapper jar file from Sonatype Maven repositories.
+You can [[https://oss.sonatype.org/content/repositories/snapshots/com/rimerosolutions/ant/ant-wrapper/0.0.1-SNAPSHOT/ant-wrapper-0.0.1  .jar][download directly]] the wrapper jar file from Sonatype Maven repositories.
 
 ** Using AntLib
 It's also possible to use [[http://ant.apache.org/manual/Types/antlib.html][Antlib]] and XML namespaces to refer to the Ant wrapper custom task.
@@ -65,7 +64,7 @@ It's also possible to use [[http://ant.apache.org/manual/Types/antlib.html][Antl
  :  <!-- if you have the wrapper jar at the root folder of your project 
  : 	    <taskdef uri="antlib:com.rimerosolutions.ant.wrapper.tasks"
  :                   resource="com/rimerosolutions/ant/wrapper/tasks/antlib.xml"
- :                   classpath="ant-wrapper-0.0.1-SNAPSHOT.jar"/>
+ :                   classpath="ant-wrapper-0.0.1.jar"/>
  :  --> 
  : 
  :  <target name="wrapper">
@@ -88,7 +87,7 @@ It's also possible to use [[http://ant.apache.org/manual/Types/antlib.html][Antl
  : 	<!-- if you have the wrapper jar at the root folder of your project 
  : 	<taskdef name="genAntWrapper" classname="com.rimerosolutions.ant.wrapper.tasks.AntWrapperTask">
  : 	<classpath>
- : 	    <pathelement location="ant-wrapper-0.0.1-SNAPSHOT.jar"/>
+ : 	    <pathelement location="ant-wrapper-0.0.1.jar"/>
  : 	  </classpath>
  :   </taskdef>
  :   --> 
