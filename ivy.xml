@@ -53,7 +53,7 @@ limitations under the License.
                 <dependency org="org.apache.ant" name="ant-junit" rev="1.7.1" conf="test"/>
 
                 <!-- release dependencies -->
-                <dependency org="com.rimerosolutions.ant" name="ant-git-tasks" rev="0.0.1-SNAPSHOT" changing="true" conf="release"/>
+                <dependency org="com.rimerosolutions.ant" name="ant-git-tasks" rev="0.0.1" conf="release"/>
                 <dependency org="org.eclipse.jgit" name="org.eclipse.jgit.ant" rev="3.0.0.201306101825-r" conf="release"/>
                 <dependency org="org.eclipse.jgit" name="org.eclipse.jgit" rev="3.0.0.201306101825-r" conf="release"/>
                 <dependency org="com.jcraft" name="jsch" rev="0.1.50" conf="release"/>
