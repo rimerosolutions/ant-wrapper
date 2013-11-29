@@ -232,8 +232,8 @@ limitations under the License.
 
         <target name="-pre-release" depends="-git-settings">
                 <echo>Checking tree modifications before release.</echo>
-                <git:git localDirectory="${basedir}" verbose="true">
-                        <git:uptodate modificationExistProperty="tree.modified"/>
+                <git:git directory="${basedir}" verbose="true">
+                        <git:uptodate modificationExistProperty="tree.modified" failonerror="false"/>
                 </git:git>
 
                 <condition property="tree.modified.but.not.snapshot">
@@ -246,18 +246,18 @@ limitations under the License.
 
         <target name="-commit-release" depends="-pre-release" if="tree.modified.but.not.snapshot">
                 <echo>Committing before release SCM tagging.</echo>
-                <git:git localDirectory="${basedir}" verbose="true" settingsRef="github.settings">
-                        <git:commit message="Preparing release ${build.number}"/>
-                        <git:uptodate failOnError="true"/>
-                        <git:push/>
+                <git:git directory="${basedir}" verbose="true" settingsRef="github.settings">
+                    <git:commit message="Preparing release ${build.number}"/>
+                    <git:uptodate failOnError="true"/>
+                    <git:push/>
                 </git:git>
         </target>
 
         <target name="-tag-release" depends="-commit-release" unless="snapshot-build">
                 <echo>Tagging release ${build.number}.</echo>
-                <git:git localDirectory="${basedir}" verbose="true" settingsRef="github.settings">
-                        <git:tag name="${build.number}"/>
-                        <git:push/>
+                <git:git directory="${basedir}" verbose="true" settingsRef="github.settings">
+                    <git:tag name="${build.number}"/>
+                    <git:push/>
                 </git:git>
         </target>
 
@@ -365,12 +365,12 @@ limitations under the License.
                 <echo>Running junit tests.</echo>
 
                 <junit fork="true"
-                             dir="${basedir}"
-                             printsummary="yes"
-                             showoutput="true"
-                             haltonfailure="false"
-                             errorproperty="junit.failed"
-                             includeantruntime="false">
+                       dir="${basedir}"
+                       printsummary="yes"
+                       showoutput="true"
+                       haltonfailure="false"
+                       errorproperty="junit.failed"
+                       includeantruntime="false">
 
                         <sysproperty key="net.sourceforge.cobertura.datafile"
                                      file="${cobertura.data.file}"/>

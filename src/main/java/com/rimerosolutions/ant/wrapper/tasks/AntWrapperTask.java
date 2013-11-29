@@ -15,10 +15,18 @@
  */
 package com.rimerosolutions.ant.wrapper.tasks;
 
+
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
+
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -34,9 +42,9 @@ import org.apache.tools.ant.util.FileUtils;
 
 /**
  * Ant wrapper task.
- * 
+ *
  * <strong>setDescription is ignored.</strong>
- * 
+ *
  * @author Yves Zoundi
  */
 public class AntWrapperTask extends Task {
@@ -60,9 +68,9 @@ public class AntWrapperTask extends Task {
         public static final String LAUNCHER_UNIX_FILE_NAME = "antw";
 
         static final String RESOURCES_LOCATION = "com/rimerosolutions/ant/wrapper";
-        static final String[] LAUNCHER_RESOURCES = { 
-                LAUNCHER_WINDOWS_FILE_NAME, 
-                LAUNCHER_WINDOWSCMD_FILE_NAME, 
+        static final String[] LAUNCHER_RESOURCES = {
+                LAUNCHER_WINDOWS_FILE_NAME,
+                LAUNCHER_WINDOWSCMD_FILE_NAME,
                 LCP_WINDOWS_FILE_NAME,
                 LAUNCHER_UNIX_FILE_NAME
         };
@@ -75,7 +83,7 @@ public class AntWrapperTask extends Task {
 
         /**
          * Sets the Ant version to use
-         * 
+         *
          * @param antVersion The Ant version to use (Default auto-detected)
          */
         public void setAntVersion(String antVersion) {
@@ -108,7 +116,7 @@ public class AntWrapperTask extends Task {
                         File launcherFile = new File(getProject().getBaseDir(), launcherFileName);
 
                         try {
-                                copyResourceToFile(new FileResource(new File(launcherUrl.getFile())), launcherFile);
+                                writeToFile(launcherUrl.openStream(), launcherFile);
                         } catch (Exception e) {
                                 throw new BuildException(e);
                         }
@@ -122,12 +130,10 @@ public class AntWrapperTask extends Task {
         private void writeWrapperPropertiesFile() {
                 File wrapperSupportDir = new File(getProject().getBaseDir(), WRAPPER_ROOT_FOLDER_NAME);
                 ensureWrapperSupportDirExists(wrapperSupportDir);
-
-                copyResourceToFile(new FileResource(findWrapperJarFile()), new File(wrapperSupportDir, WRAPPER_JAR_FILE_NAME));
-
                 FileOutputStream propertiesOutputStream = null;
 
                 try {
+                        writeToFile(new FileInputStream(findWrapperJarFile()), new File(wrapperSupportDir, WRAPPER_JAR_FILE_NAME));
                         File file = new File(wrapperSupportDir, WRAPPER_PROPERTIES_FILE_NAME);
                         Properties props = new Properties();
                         props.put(DISTRIBUTION_URL_PROPERTY, buildDistributionUrl());
@@ -184,12 +190,41 @@ public class AntWrapperTask extends Task {
                 return new File(location.getPath());
         }
 
-        private static void copyResourceToFile(Resource r, File f) {
-                Copy copy = new Copy();
-                copy.setProject(new Project());
-                copy.add(r);
-                copy.setTofile(f);
-                copy.execute();
+        private static void writeToFile(InputStream stream, File filePath) throws IOException {
+                FileChannel outChannel = null;
+                ReadableByteChannel inChannel = null;
+                FileOutputStream fos = null;
+
+                try {
+                        fos = new FileOutputStream(filePath);
+                        outChannel = fos.getChannel();
+                        inChannel = Channels.newChannel(stream);
+                        ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
+
+                        while (inChannel.read(buffer) >= 0 || buffer.position() > 0) {
+                                buffer.flip();
+                                outChannel.write(buffer);
+                                buffer.clear();
+                        }
+                }
+                finally {
+                        if (inChannel != null) {
+
+                                inChannel.close();
+                        }
+
+                        if (outChannel != null) {
+                                outChannel.close();
+                        }
+
+                        if (fos != null) {
+                                fos.close();
+                        }
+
+                        if (stream != null) {
+                                stream.close();
+                        }
+                }
         }
 
         private static String getAntRuntimeVersion() throws BuildException {
@@ -199,7 +234,7 @@ public class AntWrapperTask extends Task {
                         Properties props = new Properties();
                         in = AntWrapperTask.class.getResourceAsStream(ANT_VERSION_FILE_LOCATION);
                         props.load(in);
-                        
+
                         return props.getProperty(ANT_VERSION_PROPERTY);
                 } catch (IOException ioe) {
                         throw new BuildException("Could not load the version information:" + ioe.getMessage());
