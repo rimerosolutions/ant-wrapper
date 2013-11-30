@@ -2,9 +2,9 @@
 .classpath
 .project
 .settings
-README.html
-TAGS
-dist
-lib
-target
-
+/README.html
+/TAGS
+/dist
+/lib
+/target
+/.projectile
