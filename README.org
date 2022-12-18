@@ -3,6 +3,11 @@
 #+ATTR_HTML: title="travis-ci status page"
 [[https://travis-ci.org/rimerosolutions/ant-wrapper/][file:https://travis-ci.org/rimerosolutions/ant-wrapper.png]]
 
+*IMPORTANT: This project is officially retired*
+- I haven't updated this for a while and there's been an issue reported for few years
+- I don't program "that much" professionally anymore and I haven't used Apache Ant since 2014 or so
+- For my Open Source projects, I've been "playing around" [[https://github.com/rimerosolutions/entrusted][mostly with Rust lately]]
+    
 * Summary
 
 This is an [[http://ant.apache.org/][Apache Ant]] command line wrapper similar to the [[http://www.gradle.org/docs/current/userguide/gradle_wrapper.html][Gradle command line wrapper]].
